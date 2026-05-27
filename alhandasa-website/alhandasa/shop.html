@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>المتجر الاختياري — Progressive Tagsverd</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/custom.css">
+  <style>
+.shop-layout{display:flex;gap:24px;max-width:1300px;margin:0 auto;padding:32px 20px;align-items:flex-start}
+.shop-sidebar{width:220px;flex-shrink:0;position:sticky;top:80px}
+.sidebar-title{font-size:.85rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+.filter-btn{display:block;width:100%;text-align:right;padding:8px 12px;border-radius:8px;border:none;background:none;font-family:Cairo,sans-serif;font-size:.9rem;font-weight:600;color:var(--text-secondary);cursor:pointer;transition:all .15s;margin-bottom:2px}
+.filter-btn:hover{background:var(--surface-hover);color:var(--text-primary)}
+.filter-btn.active{background:#0ea5e9;color:#fff}
+.filter-count{float:left;background:var(--surface-secondary);color:var(--text-muted);border-radius:999px;font-size:.72rem;padding:1px 8px;margin-top:2px}
+.filter-btn.active .filter-count{background:rgba(255,255,255,.2);color:#fff}
+.shop-main{flex:1;min-width:0}
+.shop-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.shop-count{font-size:.88rem;color:var(--text-muted)}
+.search-bar{display:flex;align-items:center;gap:8px;background:var(--surface-primary);border:1px solid var(--border-default);border-radius:10px;padding:8px 16px;box-shadow:var(--shadow-lifted)}
+.search-bar input{border:none;background:none;font-family:Cairo,sans-serif;font-size:.9rem;color:var(--text-primary);outline:none;width:180px}
+.search-bar input::placeholder{color:var(--text-muted)}
+.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.product-card{background:var(--surface-primary);border-radius:14px;box-shadow:var(--shadow-lifted-card);overflow:hidden;transition:transform .2s,box-shadow .2s}
+.product-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.product-card.hidden{display:none}
+.product-img{width:100%;height:150px;background:var(--surface-secondary);display:flex;align-items:center;justify-content:center;font-size:3.5rem}
+.product-body{padding:12px 16px}
+.product-cat{font-size:.7rem;font-weight:700;color:#0ea5e9;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.product-name{font-size:.92rem;font-weight:700;color:var(--text-primary);margin-bottom:4px;line-height:1.3}
+.product-desc{font-size:.78rem;color:var(--text-muted);margin-bottom:12px;line-height:1.5}
+.product-footer{display:flex;align-items:center;justify-content:space-between}
+.product-price{font-size:1.05rem;font-weight:900;color:var(--text-primary)}
+.product-unit{font-size:.72rem;color:var(--text-muted)}
+.add-btn{background:#0ea5e9;color:#fff;border:none;border-radius:8px;width:34px;height:34px;font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0}
+.add-btn:hover{background:#0284c7}
+.add-btn:active{transform:scale(.9)}
+.cart-toggle{position:fixed;bottom:24px;left:24px;background:#0ea5e9;color:#fff;border:none;border-radius:999px;padding:12px 20px;font-family:Cairo,sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(14,165,233,.4);display:flex;align-items:center;gap:8px;z-index:200;transition:transform .15s}
+.cart-toggle:hover{transform:translateY(-2px)}
+.cart-badge{background:#ef4444;color:#fff;border-radius:999px;font-size:.72rem;font-weight:800;min-width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;padding:0 5px}
+.cart-panel{position:fixed;left:0;top:0;height:100vh;width:360px;background:var(--surface-primary);box-shadow:4px 0 24px rgba(0,0,0,.15);z-index:300;transform:translateX(-100%);transition:transform .2s;display:flex;flex-direction:column}
+.cart-panel.open{transform:translateX(0)}
+.cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:299;display:none;backdrop-filter:blur(2px)}
+.cart-overlay.open{display:block}
+.cart-head{padding:20px 20px 16px;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:space-between}
+.cart-head h2{font-size:1.2rem;font-weight:800;margin:0}
+.cart-close{background:var(--surface-hover);border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:1rem;color:var(--text-secondary);display:flex;align-items:center;justify-content:center}
+.cart-items{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:12px}
+.cart-empty{text-align:center;padding:48px 20px;color:var(--text-muted)}
+.cart-empty-icon{font-size:3rem;margin-bottom:12px}
+.cart-item{display:flex;align-items:center;gap:12px;background:var(--surface-secondary);border-radius:10px;padding:12px}
+.cart-item-icon{font-size:1.8rem;flex-shrink:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--surface-primary);border-radius:8px}
+.cart-item-info{flex:1;min-width:0}
+.cart-item-name{font-size:.88rem;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cart-item-price{font-size:.8rem;color:#0ea5e9;font-weight:700}
+.cart-item-controls{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.qty-btn{background:var(--surface-primary);border:1px solid var(--border-default);border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;color:var(--text-primary)}
+.qty-num{font-size:.9rem;font-weight:700;min-width:20px;text-align:center}
+.remove-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1rem;padding:2px}
+.remove-btn:hover{color:#ef4444}
+.cart-foot{padding:20px;border-top:1px solid var(--border-subtle)}
+.summary-row{display:flex;justify-content:space-between;font-size:.88rem;color:var(--text-secondary);margin-bottom:8px}
+.summary-total{display:flex;justify-content:space-between;font-size:1.1rem;font-weight:800;color:var(--text-primary);padding-top:12px;border-top:1px solid var(--border-subtle);margin-top:12px}
+.checkout-btn{width:100%;padding:16px;background:#0ea5e9;color:#fff;border:none;border-radius:10px;font-family:Cairo,sans-serif;font-size:1rem;font-weight:700;cursor:pointer}
+.checkout-btn:hover{background:#0284c7}
+.clear-btn{width:100%;padding:8px;background:none;border:none;color:var(--text-muted);font-family:Cairo,sans-serif;font-size:.85rem;cursor:pointer;margin-top:8px}
+.clear-btn:hover{color:#ef4444}
+.checkout-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
+.checkout-modal.open{display:flex}
+.checkout-box{background:var(--surface-primary);border-radius:14px;padding:32px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;position:relative;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+@media(max-width:768px){.shop-layout{flex-direction:column;padding:16px}.shop-sidebar{width:100%;position:static}.filter-btns{display:flex;flex-wrap:wrap;gap:8px}.filter-btn{width:auto;display:inline-block}.filter-count{display:none}.products-grid{grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px}.cart-panel{width:100%}.search-bar input{width:130px}}
+  
+
+
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <div class="logo-icon">&#127959;&#65039;</div>
+        <div class="logo-text">
+          <span class="logo-main">Progressive Tagsverd</span>
+          <span class="logo-sub">&#1587;&#1576;&#1575;&#1603;&#1577; &#x2022; &#1603;&#1607;&#1585;&#1576;&#1575;&#1569; &#x2022; &#1578;&#1588;&#1591;&#1610;&#1576;&#1575;&#1578;</span>
+        </div>
+      </div>
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">&#1575;&#1604;&#1585;&#1574;&#1610;&#1587;&#1610;&#1577;</a></li>
+        <li><a href="sections.html" class="nav-link">&#1575;&#1604;&#1571;&#1602;&#1587;&#1575;&#1605;</a></li>
+        <li><a href="packages.html" class="nav-link">&#1575;&#1604;&#1576;&#1575;&#1602;&#1575;&#1578;</a></li>
+        <li><a href="shop.html" class="nav-link active">&#1575;&#1604;&#1605;&#1578;&#1580;&#1585; &#1575;&#1604;&#1575;&#1582;&#1578;&#1610;&#1575;&#1585;&#1610;</a></li>
+        <li><a href="contact.html" class="nav-link">&#1578;&#1608;&#1575;&#1589;&#1604; &#1605;&#1593;&#1606;&#1575;</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="theme-toggle" title="toggle">
+          <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
+      <button class="mobile-menu-btn" onclick="toggleMobileMenu()">&#9776;</button>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="index.html" class="mobile-link">&#1575;&#1604;&#1585;&#1574;&#1610;&#1587;&#1610;&#1577;</a>
+      <a href="sections.html" class="mobile-link">&#1575;&#1604;&#1571;&#1602;&#1587;&#1575;&#1605;</a>
+      <a href="packages.html" class="mobile-link">&#1575;&#1604;&#1576;&#1575;&#1602;&#1575;&#1578;</a>
+      <a href="shop.html" class="mobile-link">&#1575;&#1604;&#1605;&#1578;&#1580;&#1585;</a>
+      <a href="contact.html" class="mobile-link">&#1578;&#1608;&#1575;&#1589;&#1604; &#1605;&#1593;&#1606;&#1575;</a>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <div class="section-container">
+      <div class="section-tag">&#128722; &#1575;&#1582;&#1578;&#1585; &#1605;&#1575; &#1610;&#1606;&#1575;&#1587;&#1576;&#1603;</div>
+      <h1 class="page-title">&#1575;&#1604;&#1605;&#1578;&#1580;&#1585; &#1575;&#1604;&#1575;&#1582;&#1578;&#1610;&#1575;&#1585;&#1610;</h1>
+      <p class="page-desc">&#1575;&#1582;&#1578;&#1585; &#1575;&#1604;&#1605;&#1608;&#1575;&#1583; &#1608;&#1575;&#1604;&#1602;&#1591;&#1593; &#1575;&#1604;&#1578;&#1610; &#1578;&#1581;&#1578;&#1575;&#1580;&#1607;&#1575; &#1576;&#1588;&#1603;&#1604; &#1605;&#1606;&#1601;&#1585;&#1583; &#8212; &#1571;&#1590;&#1601;&#1607;&#1575; &#1604;&#1604;&#1587;&#1604;&#1577; &#1608;&#1575;&#1591;&#1604;&#1576;&#1607;&#1575; &#1583;&#1601;&#1593;&#1577; &#1608;&#1575;&#1581;&#1583;&#1577;</p>
+    </div>
+  </div>
+
+  <div class="shop-layout">
+    <aside class="shop-sidebar">
+      <div class="sidebar-title">&#1575;&#1604;&#1601;&#1574;&#1575;&#1578;</div>
+      <div class="filter-btns">
+        <button class="filter-btn active" onclick="filterCat('all',this)">&#127968; &#1575;&#1604;&#1603;&#1604; <span class="filter-count">28</span></button>
+        <button class="filter-btn" onclick="filterCat('ceramic',this)">&#129595; &#1587;&#1610;&#1585;&#1575;&#1605;&#1610;&#1603; &#1608;&#1576;&#1604;&#1575;&#1591; <span class="filter-count">6</span></button>
+        <button class="filter-btn" onclick="filterCat('plumbing',this)">&#128167; &#1589;&#1581;&#1610;&#1575;&#1578; &#1608;&#1587;&#1576;&#1575;&#1603;&#1577; <span class="filter-count">8</span></button>
+        <button class="filter-btn" onclick="filterCat('electric',this)">&#9889; &#1603;&#1607;&#1585;&#1576;&#1575;&#1574;&#1610;&#1575;&#1578; <span class="filter-count">7</span></button>
+        <button class="filter-btn" onclick="filterCat('doors',this)">&#128682; &#1571;&#1576;&#1608;&#1575;&#1576; &#1608;&#1588;&#1576;&#1575;&#1576;&#1610;&#1603; <span class="filter-count">3</span></button>
+        <button class="filter-btn" onclick="filterCat('finish',this)">&#127912; &#1578;&#1588;&#1591;&#1610;&#1576;&#1575;&#1578; <span class="filter-count">4</span></button>
+      </div>
+    </aside>
+
+    <main class="shop-main">
+      <div class="shop-header">
+        <span class="shop-count" id="shopCount">28 &#1605;&#1606;&#1578;&#1580;</span>
+        <div class="search-bar">
+          <span>&#128269;</span>
+          <input type="text" placeholder="&#1575;&#1576;&#1581;&#1579; &#1593;&#1606; &#1605;&#1606;&#1578;&#1580;..." oninput="searchProducts(this.value)">
+        </div>
+      </div>
+      <div class="products-grid" id="productsGrid">
+
+        <div class="product-card" data-cat="ceramic" data-name="&#1587;&#1610;&#1585;&#1575;&#1605;&#1610;&#1603; &#1586;&#1606;&#1608;&#1576;&#1610;&#1575; 50x50">
+          <div class="product-img">&#129595;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1587;&#1610;&#1585;&#1575;&#1605;&#1610;&#1603; &#1608;&#1576;&#1604;&#1575;&#1591;</div>
+            <div class="product-name">&#1587;&#1610;&#1585;&#1575;&#1605;&#1610;&#1603; &#1586;&#1606;&#1608;&#1576;&#1610;&#1575; 50&#215;50</div>
+            <div class="product-desc">&#1571;&#1585;&#1590;&#1610;&#1575;&#1578; &#1601;&#1575;&#1582;&#1585;&#1577; &#1605;&#1575;&#1585;&#1603;&#1577; &#1586;&#1606;&#1608;&#1576;&#1610;&#1575;</div>
+            <div class="product-footer">
+              <div><div class="product-price">8 $</div><div class="product-unit">/ &#1605;&#178;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1587;&#1610;&#1585;&#1575;&#1605;&#1610;&#1603; &#1586;&#1606;&#1608;&#1576;&#1610;&#1575; 50&#215;50', 8, '&#129595;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="ceramic" data-name="&#1576;&#1604;&#1575;&#1591; &#1581;&#1587;&#1608;&#1575;&#1606;&#1610; 30x30">
+          <div class="product-img">&#128306;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1587;&#1610;&#1585;&#1575;&#1605;&#1610;&#1603; &#1608;&#1576;&#1604;&#1575;&#1591;</div>
+            <div class="product-name">&#1576;&#1604;&#1575;&#1591; &#1581;&#1587;&#1608;&#1575;&#1606;&#1610; 30&#215;30</div>
+            <div class="product-desc">&#1576;&#1604;&#1575;&#1591; &#1571;&#1585;&#1590;&#1610;&#1575;&#1578; &#1605;&#1578;&#1610;&#1606; &#1604;&#1604;&#1583;&#1575;&#1582;&#1604;&#1610;</div>
+            <div class="product-footer">
+              <div><div class="product-price">5 $</div><div class="product-unit">/ &#1605;&#178;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1576;&#1604;&#1575;&#1591; &#1581;&#1587;&#1608;&#1575;&#1606;&#1610; 30&#215;30', 5, '&#128306;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="ceramic" data-name="&#1587;&#1610;&#1585;&#1575;&#1605;&#1610;&#1603; &#1581;&#1605;&#1575;&#1605; 60x30">
+          <div class="product-img">&#128310;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1587;&#1610;&#1585;&#1575;&#1605;&#1610;&#1603; &#1608;&#1576;&#1604;&#1575;&#1591;</div>
+            <div class="product-name">&#1587;&#1610;&#1585;&#1575;&#1605;&#1610;&#1603; &#1581;&#1605;&#1575;&#1605; 60&#215;30</div>
+            <div class="product-desc">&#1586;&#1606;&#1608;&#1576;&#1610;&#1575; 4 &#8212; &#1605;&#1582;&#1589;&#1589; &#1604;&#1604;&#1581;&#1605;&#1575;&#1605; &#1608;&#1575;&#1604;&#1605;&#1591;&#1576;&#1582;</div>
+            <div class="product-footer">
+              <div><div class="product-price">10 $</div><div class="product-unit">/ &#1605;&#178;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1587;&#1610;&#1585;&#1575;&#1605;&#1610;&#1603; &#1581;&#1605;&#1575;&#1605; 60&#215;30', 10, '&#128310;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="ceramic" data-name="&#1587;&#1608;&#1575;&#1583; &#1571;&#1585;&#1590;&#1610;&#1577;">
+          <div class="product-img">&#11035;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1587;&#1610;&#1585;&#1575;&#1605;&#1610;&#1603; &#1608;&#1576;&#1604;&#1575;&#1591;</div>
+            <div class="product-name">&#1587;&#1608;&#1575;&#1583; &#1571;&#1585;&#1590;&#1610;&#1577;</div>
+            <div class="product-desc">&#1591;&#1576;&#1602;&#1577; &#1593;&#1575;&#1586;&#1604;&#1577; &#1578;&#1581;&#1578; &#1575;&#1604;&#1576;&#1604;&#1575;&#1591;</div>
+            <div class="product-footer">
+              <div><div class="product-price">3 $</div><div class="product-unit">/ &#1605;&#178;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1587;&#1608;&#1575;&#1583; &#1571;&#1585;&#1590;&#1610;&#1577;', 3, '&#11035;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="ceramic" data-name="&#1594;&#1585;&#1575;&#1606;&#1610;&#1578; &#1578;&#1585;&#1603;&#1610; 3cm">
+          <div class="product-img">&#129704;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1587;&#1610;&#1585;&#1575;&#1605;&#1610;&#1603; &#1608;&#1576;&#1604;&#1575;&#1591;</div>
+            <div class="product-name">&#1594;&#1585;&#1575;&#1606;&#1610;&#1578; &#1578;&#1585;&#1603;&#1610; 3cm</div>
+            <div class="product-desc">&#1594;&#1585;&#1575;&#1606;&#1610;&#1578; &#1601;&#1575;&#1582;&#1585; &#1587;&#1605;&#1575;&#1603;&#1577; 3cm &#1604;&#1604;&#1571;&#1587;&#1591;&#1581;</div>
+            <div class="product-footer">
+              <div><div class="product-price">25 $</div><div class="product-unit">/ &#1605;&#178;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1594;&#1585;&#1575;&#1606;&#1610;&#1578; &#1578;&#1585;&#1603;&#1610; 3cm', 25, '&#129704;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="ceramic" data-name="&#1585;&#1582;&#1575;&#1605; &#1571;&#1576;&#1610;&#1590;">
+          <div class="product-img">&#11036;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1587;&#1610;&#1585;&#1575;&#1605;&#1610;&#1603; &#1608;&#1576;&#1604;&#1575;&#1591;</div>
+            <div class="product-name">&#1585;&#1582;&#1575;&#1605; &#1571;&#1576;&#1610;&#1590; &#1601;&#1575;&#1582;&#1585;</div>
+            <div class="product-desc">&#1585;&#1582;&#1575;&#1605; &#1591;&#1576;&#1610;&#1593;&#1610; &#1604;&#1604;&#1571;&#1587;&#1591;&#1581; &#1608;&#1575;&#1604;&#1571;&#1585;&#1590;&#1610;&#1575;&#1578;</div>
+            <div class="product-footer">
+              <div><div class="product-price">35 $</div><div class="product-unit">/ &#1605;&#178;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1585;&#1582;&#1575;&#1605; &#1571;&#1576;&#1610;&#1590; &#1601;&#1575;&#1582;&#1585;', 35, '&#11036;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="plumbing" data-name="&#1578;&#1608;&#1575;&#1604;&#1610;&#1578; &#1588;&#1585;&#1602;">
+          <div class="product-img">&#128701;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1589;&#1581;&#1610;&#1575;&#1578; &#1608;&#1587;&#1576;&#1575;&#1603;&#1577;</div>
+            <div class="product-name">&#1578;&#1608;&#1575;&#1604;&#1610;&#1578; &#1588;&#1585;&#1602;</div>
+            <div class="product-desc">&#1578;&#1608;&#1575;&#1604;&#1610;&#1578; &#1589;&#1581;&#1610; &#1605;&#1593; &#1582;&#1585;&#1591;&#1608;&#1605; &#1578;&#1608;&#1589;&#1610;&#1604;</div>
+            <div class="product-footer">
+              <div><div class="product-price">35 $</div><div class="product-unit">/ &#1602;&#1591;&#1593;&#1577;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1578;&#1608;&#1575;&#1604;&#1610;&#1578; &#1588;&#1585;&#1602;', 35, '&#128701;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="plumbing" data-name="&#1605;&#1594;&#1587;&#1604;&#1577; &#1576;&#1585;&#1606;&#1587;">
+          <div class="product-img">&#129507;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1589;&#1581;&#1610;&#1575;&#1578; &#1608;&#1587;&#1576;&#1575;&#1603;&#1577;</div>
+            <div class="product-name">&#1605;&#1594;&#1587;&#1604;&#1577; &#1589;&#1610;&#1606;&#1610; &#1576;&#1585;&#1606;&#1587;</div>
+            <div class="product-desc">&#1605;&#1594;&#1587;&#1604;&#1577; &#1576;&#1608;&#1585;&#1587;&#1604;&#1575;&#1606; &#1601;&#1575;&#1582;&#1585;&#1577; &#1605;&#1575;&#1585;&#1603;&#1577; &#1576;&#1585;&#1606;&#1587;</div>
+            <div class="product-footer">
+              <div><div class="product-price">28 $</div><div class="product-unit">/ &#1602;&#1591;&#1593;&#1577;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1605;&#1594;&#1587;&#1604;&#1577; &#1589;&#1610;&#1606;&#1610; &#1576;&#1585;&#1606;&#1587;', 28, '&#129507;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="plumbing" data-name="&#1582;&#1604;&#1575;&#1591; &#1586;&#1575;&#1607;&#1610;&#1577;">
+          <div class="product-img">&#128703;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1589;&#1581;&#1610;&#1575;&#1578; &#1608;&#1587;&#1576;&#1575;&#1603;&#1577;</div>
+            <div class="product-name">&#1582;&#1604;&#1575;&#1591; &#1586;&#1575;&#1607;&#1610;&#1577;</div>
+            <div class="product-desc">&#1582;&#1604;&#1575;&#1591; &#1606;&#1581;&#1575;&#1587;&#1610; &#1589;&#1610;&#1606;&#1610; &#1605;&#1575;&#1585;&#1603;&#1577; &#1586;&#1575;&#1607;&#1610;&#1577;</div>
+            <div class="product-footer">
+              <div><div class="product-price">15 $</div><div class="product-unit">/ &#1602;&#1591;&#1593;&#1577;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1582;&#1604;&#1575;&#1591; &#1586;&#1575;&#1607;&#1610;&#1577;', 15, '&#128703;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="plumbing" data-name="&#1583;&#1608;&#1588; &#1581;&#1605;&#1575;&#1605;">
+          <div class="product-img">&#128703;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1589;&#1581;&#1610;&#1575;&#1578; &#1608;&#1587;&#1576;&#1575;&#1603;&#1577;</div>
+            <div class="product-name">&#1583;&#1608;&#1588; &#1581;&#1605;&#1575;&#1605;</div>
+            <div class="product-desc">&#1585;&#1571;&#1587; &#1583;&#1608;&#1588; &#1605;&#1593; &#1584;&#1585;&#1575;&#1593; &#1578;&#1579;&#1576;&#1610;&#1578;</div>
+            <div class="product-footer">
+              <div><div class="product-price">12 $</div><div class="product-unit">/ &#1602;&#1591;&#1593;&#1577;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1583;&#1608;&#1588; &#1581;&#1605;&#1575;&#1605;', 12, '&#128703;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="plumbing" data-name="&#1587;&#1582;&#1575;&#1606; &#1575;&#1604;&#1576;&#1607;&#1575;&#1569; 17kg">
+          <div class="product-img">&#9832;&#65039;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1589;&#1581;&#1610;&#1575;&#1578; &#1608;&#1587;&#1576;&#1575;&#1603;&#1577;</div>
+            <div class="product-name">&#1587;&#1582;&#1575;&#1606; &#1573;&#1610;&#1591;&#1575;&#1604;&#1610; &#1575;&#1604;&#1576;&#1607;&#1575;&#1569;</div>
+            <div class="product-desc">17 &#1603;&#1610;&#1604;&#1608; &#8212; &#1587;&#1582;&#1575;&#1606; &#1605;&#1610;&#1575;&#1607; &#1573;&#1610;&#1591;&#1575;&#1604;&#1610; &#1575;&#1604;&#1589;&#1606;&#1593;</div>
+            <div class="product-footer">
+              <div><div class="product-price">55 $</div><div class="product-unit">/ &#1602;&#1591;&#1593;&#1577;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1587;&#1582;&#1575;&#1606; &#1573;&#1610;&#1591;&#1575;&#1604;&#1610; &#1575;&#1604;&#1576;&#1607;&#1575;&#1569;', 55, '&#9832;&#65039;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="plumbing" data-name="PPR &#1576;&#1575;&#1585;&#1583; 25mm">
+          <div class="product-img">&#128309;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1589;&#1581;&#1610;&#1575;&#1578; &#1608;&#1587;&#1576;&#1575;&#1603;&#1577;</div>
+            <div class="product-name">&#1571;&#1606;&#1576;&#1608;&#1576; PPR &#1576;&#1575;&#1585;&#1583; 25mm</div>
+            <div class="product-desc">&#1605;&#1575;&#1585;&#1603;&#1577; &#1575;&#1604;&#1587;&#1593;&#1583; &#8212; &#1604;&#1604;&#1605;&#1610;&#1575;&#1607; &#1575;&#1604;&#1576;&#1575;&#1585;&#1583;&#1577;</div>
+            <div class="product-footer">
+              <div><div class="product-price">3 $</div><div class="product-unit">/ &#1605;&#1578;&#1585;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1571;&#1606;&#1576;&#1608;&#1576; PPR &#1576;&#1575;&#1585;&#1583; 25mm', 3, '&#128309;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="plumbing" data-name="PPR &#1587;&#1575;&#1582;&#1606; 32mm">
+          <div class="product-img">&#128308;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1589;&#1581;&#1610;&#1575;&#1578; &#1608;&#1587;&#1576;&#1575;&#1603;&#1577;</div>
+            <div class="product-name">&#1571;&#1606;&#1576;&#1608;&#1576; PPR &#1587;&#1575;&#1582;&#1606; 32mm</div>
+            <div class="product-desc">&#1605;&#1575;&#1585;&#1603;&#1577; &#1575;&#1604;&#1587;&#1593;&#1583; &#8212; &#1604;&#1604;&#1605;&#1610;&#1575;&#1607; &#1575;&#1604;&#1587;&#1575;&#1582;&#1606;&#1577;</div>
+            <div class="product-footer">
+              <div><div class="product-price">4 $</div><div class="product-unit">/ &#1605;&#1578;&#1585;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1571;&#1606;&#1576;&#1608;&#1576; PPR &#1587;&#1575;&#1582;&#1606; 32mm', 4, '&#128308;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="plumbing" data-name="&#1576;&#1585;&#1605;&#1610;&#1604; &#1575;&#1604;&#1605;&#1587;&#1593;&#1608;&#1583;">
+          <div class="product-img">&#129507;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1589;&#1581;&#1610;&#1575;&#1578; &#1608;&#1587;&#1576;&#1575;&#1603;&#1577;</div>
+            <div class="product-name">&#1576;&#1585;&#1605;&#1610;&#1604; &#1605;&#1610;&#1575;&#1607; &#1575;&#1604;&#1605;&#1587;&#1593;&#1608;&#1583;</div>
+            <div class="product-desc">&#1603;&#1601;&#1575;&#1604;&#1577; 5 &#1587;&#1606;&#1608;&#1575;&#1578; &#8212; &#1571;&#1576;&#1610;&#1590;/&#1571;&#1586;&#1585;&#1602; &#1576;&#1604;&#1575;&#1587;&#1578;&#1610;&#1603;</div>
+            <div class="product-footer">
+              <div><div class="product-price">18 $</div><div class="product-unit">/ &#1602;&#1591;&#1593;&#1577;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1576;&#1585;&#1605;&#1610;&#1604; &#1605;&#1610;&#1575;&#1607; &#1575;&#1604;&#1605;&#1587;&#1593;&#1608;&#1583;', 18, '&#129507;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="electric" data-name="&#1587;&#1604;&#1603; &#1604;&#1610;&#1606;&#1575; 6mm">
+          <div class="product-img">&#128268;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1603;&#1607;&#1585;&#1576;&#1575;&#1574;&#1610;&#1575;&#1578;</div>
+            <div class="product-name">&#1587;&#1604;&#1603; &#1604;&#1610;&#1606;&#1575; 6mm &#1585;&#1574;&#1610;&#1587;&#1610;</div>
+            <div class="product-desc">&#1587;&#1604;&#1603; &#1603;&#1607;&#1585;&#1576;&#1575;&#1574;&#1610; &#1585;&#1574;&#1610;&#1587;&#1610; &#1605;&#1575;&#1585;&#1603;&#1577; &#1604;&#1610;&#1606;&#1575;</div>
+            <div class="product-footer">
+              <div><div class="product-price">2.5 $</div><div class="product-unit">/ &#1605;&#1578;&#1585;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1587;&#1604;&#1603; &#1604;&#1610;&#1606;&#1575; 6mm &#1585;&#1574;&#1610;&#1587;&#1610;', 2.5, '&#128268;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="electric" data-name="&#1587;&#1604;&#1603; &#1604;&#1610;&#1606;&#1575; 1.5mm">
+          <div class="product-img">&#128257;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1603;&#1607;&#1585;&#1576;&#1575;&#1574;&#1610;&#1575;&#1578;</div>
+            <div class="product-name">&#1587;&#1604;&#1603; &#1604;&#1610;&#1606;&#1575; 1.5mm &#1605;&#1601;&#1585;&#1583;</div>
+            <div class="product-desc">&#1604;&#1604;&#1573;&#1606;&#1575;&#1585;&#1577; &#1608;&#1575;&#1604;&#1573;&#1590;&#1575;&#1569;&#1577; &#1575;&#1604;&#1593;&#1575;&#1583;&#1610;&#1577;</div>
+            <div class="product-footer">
+              <div><div class="product-price">1.2 $</div><div class="product-unit">/ &#1605;&#1578;&#1585;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1587;&#1604;&#1603; &#1604;&#1610;&#1606;&#1575; 1.5mm &#1605;&#1601;&#1585;&#1583;', 1.2, '&#128257;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="electric" data-name="&#1605;&#1601;&#1578;&#1575;&#1581; &#1576;&#1585;&#1575;&#1610;&#1586;">
+          <div class="product-img">&#9711;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1603;&#1607;&#1585;&#1576;&#1575;&#1574;&#1610;&#1575;&#1578;</div>
+            <div class="product-name">&#1605;&#1601;&#1578;&#1575;&#1581; &#1576;&#1585;&#1575;&#1610;&#1586; 3mm</div>
+            <div class="product-desc">&#1605;&#1601;&#1578;&#1575;&#1581; &#1573;&#1590;&#1575;&#1569;&#1577; &#1605;&#1593; &#1604;&#1610;&#1583; &#1573;&#1588;&#1575;&#1585;&#1577;</div>
+            <div class="product-footer">
+              <div><div class="product-price">3.5 $</div><div class="product-unit">/ &#1602;&#1591;&#1593;&#1577;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1605;&#1601;&#1578;&#1575;&#1581; &#1576;&#1585;&#1575;&#1610;&#1586; 3mm', 3.5, '&#9711;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="electric" data-name="&#1602;&#1575;&#1591;&#1593; &#1603;&#1607;&#1585;&#1576;&#1575;&#1574;&#1610;">
+          <div class="product-img">&#9889;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1603;&#1607;&#1585;&#1576;&#1575;&#1574;&#1610;&#1575;&#1578;</div>
+            <div class="product-name">&#1602;&#1575;&#1591;&#1593; &#1603;&#1607;&#1585;&#1576;&#1575;&#1574;&#1610;</div>
+            <div class="product-desc">&#1581;&#1605;&#1575;&#1610;&#1577; &#1575;&#1604;&#1583;&#1608;&#1575;&#1574;&#1585; &#1575;&#1604;&#1603;&#1607;&#1585;&#1576;&#1575;&#1574;&#1610;&#1577;</div>
+            <div class="product-footer">
+              <div><div class="product-price">4 $</div><div class="product-unit">/ &#1602;&#1591;&#1593;&#1577;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1602;&#1575;&#1591;&#1593; &#1603;&#1607;&#1585;&#1576;&#1575;&#1574;&#1610;', 4, '&#9889;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="electric" data-name="&#1604;&#1605;&#1576;&#1577; LED">
+          <div class="product-img">&#128161;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1603;&#1607;&#1585;&#1576;&#1575;&#1574;&#1610;&#1575;&#1578;</div>
+            <div class="product-name">&#1604;&#1605;&#1576;&#1577; LED &#1606;&#1610;&#1608;&#1604;&#1575;&#1578;</div>
+            <div class="product-desc">&#1573;&#1590;&#1575;&#1569;&#1577; &#1605;&#1608;&#1601;&#1585;&#1577; &#1604;&#1604;&#1591;&#1575;&#1602;&#1577; &#1593;&#1575;&#1604;&#1610;&#1577; &#1575;&#1604;&#1580;&#1608;&#1583;&#1577;</div>
+            <div class="product-footer">
+              <div><div class="product-price">2 $</div><div class="product-unit">/ &#1602;&#1591;&#1593;&#1577;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1604;&#1605;&#1576;&#1577; LED &#1606;&#1610;&#1608;&#1604;&#1575;&#1578;', 2, '&#128161;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="electric" data-name="&#1583;&#1610;&#1606;&#1605;&#1608; &#1603;&#1575;&#1606;&#1583;&#1610;&#1604;&#1575;">
+          <div class="product-img">&#128267;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1603;&#1607;&#1585;&#1576;&#1575;&#1574;&#1610;&#1575;&#1578;</div>
+            <div class="product-name">&#1583;&#1610;&#1606;&#1605;&#1608; &#1603;&#1575;&#1606;&#1583;&#1610;&#1604;&#1575;</div>
+            <div class="product-desc">&#1605;&#1608;&#1604;&#1583; &#1603;&#1607;&#1585;&#1576;&#1575;&#1574;&#1610; &#1575;&#1581;&#1578;&#1610;&#1575;&#1591;&#1610;</div>
+            <div class="product-footer">
+              <div><div class="product-price">120 $</div><div class="product-unit">/ &#1602;&#1591;&#1593;&#1577;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1583;&#1610;&#1606;&#1605;&#1608; &#1603;&#1575;&#1606;&#1583;&#1610;&#1604;&#1575;', 120, '&#128267;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="electric" data-name="&#1605;&#1602;&#1576;&#1587; &#1605;&#1586;&#1583;&#1608;&#1580;">
+          <div class="product-img">&#128268;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1603;&#1607;&#1585;&#1576;&#1575;&#1574;&#1610;&#1575;&#1578;</div>
+            <div class="product-name">&#1605;&#1602;&#1576;&#1587; &#1605;&#1586;&#1583;&#1608;&#1580; 1mm</div>
+            <div class="product-desc">&#1605;&#1602;&#1576;&#1587; &#1603;&#1607;&#1585;&#1576;&#1575;&#1574;&#1610; &#1605;&#1586;&#1583;&#1608;&#1580; &#1593;&#1575;&#1604;&#1610; &#1575;&#1604;&#1580;&#1608;&#1583;&#1577;</div>
+            <div class="product-footer">
+              <div><div class="product-price">2.5 $</div><div class="product-unit">/ &#1602;&#1591;&#1593;&#1577;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1605;&#1602;&#1576;&#1587; &#1605;&#1586;&#1583;&#1608;&#1580; 1mm', 2.5, '&#128268;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="doors" data-name="&#1576;&#1575;&#1576; &#1571;&#1604;&#1605;&#1606;&#1610;&#1608;&#1605; &#1605;&#1587;&#1575;&#1604;&#1603;&#1608;">
+          <div class="product-img">&#128682;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1571;&#1576;&#1608;&#1575;&#1576; &#1608;&#1588;&#1576;&#1575;&#1576;&#1610;&#1603;</div>
+            <div class="product-name">&#1576;&#1575;&#1576; &#1571;&#1604;&#1605;&#1606;&#1610;&#1608;&#1605; &#1605;&#1587;&#1575;&#1604;&#1603;&#1608; &#1601;&#1590;&#1610;</div>
+            <div class="product-desc">&#1576;&#1575;&#1576; &#1582;&#1575;&#1585;&#1580;&#1610; &#1571;&#1604;&#1605;&#1606;&#1610;&#1608;&#1605; &#1601;&#1590;&#1610; &#1575;&#1604;&#1604;&#1608;&#1606;</div>
+            <div class="product-footer">
+              <div><div class="product-price">85 $</div><div class="product-unit">/ &#1602;&#1591;&#1593;&#1577;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1576;&#1575;&#1576; &#1571;&#1604;&#1605;&#1606;&#1610;&#1608;&#1605; &#1605;&#1587;&#1575;&#1604;&#1603;&#1608; &#1601;&#1590;&#1610;', 85, '&#128682;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="doors" data-name="&#1588;&#1576;&#1575;&#1603; &#1571;&#1604;&#1605;&#1606;&#1610;&#1608;&#1605;">
+          <div class="product-img">&#129695;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1571;&#1576;&#1608;&#1575;&#1576; &#1608;&#1588;&#1576;&#1575;&#1576;&#1610;&#1603;</div>
+            <div class="product-name">&#1588;&#1576;&#1575;&#1603; &#1571;&#1604;&#1605;&#1606;&#1610;&#1608;&#1605; &#1605;&#1587;&#1575;&#1604;&#1603;&#1608;</div>
+            <div class="product-desc">&#1605;&#1593; &#1605;&#1589;&#1610;&#1575;&#1601;&#1610; &#1587;&#1605;&#1575;&#1603;&#1577; 3cm</div>
+            <div class="product-footer">
+              <div><div class="product-price">55 $</div><div class="product-unit">/ &#1605;&#178;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1588;&#1576;&#1575;&#1603; &#1571;&#1604;&#1605;&#1606;&#1610;&#1608;&#1605; &#1605;&#1587;&#1575;&#1604;&#1603;&#1608;', 55, '&#129695;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="doors" data-name="&#1576;&#1575;&#1576; &#1582;&#1588;&#1576; &#1587;&#1608;&#1610;&#1583; MDF">
+          <div class="product-img">&#129717;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1571;&#1576;&#1608;&#1575;&#1576; &#1608;&#1588;&#1576;&#1575;&#1576;&#1610;&#1603;</div>
+            <div class="product-name">&#1576;&#1575;&#1576; &#1582;&#1588;&#1576; &#1587;&#1608;&#1610;&#1583; MDF</div>
+            <div class="product-desc">&#1582;&#1588;&#1576; &#1587;&#1608;&#1610;&#1583; &#1580;&#1575;&#1607;&#1586; &#8212; &#1587;&#1583; &#1603;&#1575;&#1605;&#1604;</div>
+            <div class="product-footer">
+              <div><div class="product-price">65 $</div><div class="product-unit">/ &#1602;&#1591;&#1593;&#1577;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1576;&#1575;&#1576; &#1582;&#1588;&#1576; &#1587;&#1608;&#1610;&#1583; MDF', 65, '&#129717;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="finish" data-name="&#1591;&#1585;&#1588; &#1580;&#1583;&#1585;&#1575;&#1606;">
+          <div class="product-img">&#127968;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1578;&#1588;&#1591;&#1610;&#1576;&#1575;&#1578; &#1608;&#1583;&#1607;&#1575;&#1606;</div>
+            <div class="product-name">&#1591;&#1585;&#1588; &#1580;&#1583;&#1585;&#1575;&#1606; 3 &#1571;&#1608;&#1580;&#1607;</div>
+            <div class="product-desc">&#1580;&#1583;&#1585;&#1575;&#1606; + &#1606;&#1593;&#1604;&#1577; + &#1571;&#1585;&#1590;&#1610;&#1577;</div>
+            <div class="product-footer">
+              <div><div class="product-price">6 $</div><div class="product-unit">/ &#1605;&#178;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1591;&#1585;&#1588; &#1580;&#1583;&#1585;&#1575;&#1606; 3 &#1571;&#1608;&#1580;&#1607;', 6, '&#127968;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="finish" data-name="&#1576;&#1610;&#1575;&#1590; &#1583;&#1575;&#1582;&#1604;&#1610;">
+          <div class="product-img">&#11036;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1578;&#1588;&#1591;&#1610;&#1576;&#1575;&#1578; &#1608;&#1583;&#1607;&#1575;&#1606;</div>
+            <div class="product-name">&#1576;&#1610;&#1575;&#1590; &#1583;&#1575;&#1582;&#1604;&#1610;</div>
+            <div class="product-desc">&#1591;&#1604;&#1575;&#1569; &#1583;&#1575;&#1582;&#1604;&#1610; &#1571;&#1576;&#1610;&#1590; &#1593;&#1575;&#1604;&#1610; &#1575;&#1604;&#1580;&#1608;&#1583;&#1577;</div>
+            <div class="product-footer">
+              <div><div class="product-price">4 $</div><div class="product-unit">/ &#1605;&#178;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1576;&#1610;&#1575;&#1590; &#1583;&#1575;&#1582;&#1604;&#1610;', 4, '&#11036;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="finish" data-name="&#1576;&#1610;&#1575;&#1590; &#1582;&#1575;&#1585;&#1580;&#1610;">
+          <div class="product-img">&#127968;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1578;&#1588;&#1591;&#1610;&#1576;&#1575;&#1578; &#1608;&#1583;&#1607;&#1575;&#1606;</div>
+            <div class="product-name">&#1576;&#1610;&#1575;&#1590; &#1582;&#1575;&#1585;&#1580;&#1610;</div>
+            <div class="product-desc">&#1591;&#1604;&#1575;&#1569; &#1582;&#1575;&#1585;&#1580;&#1610; &#1605;&#1602;&#1575;&#1608;&#1605; &#1604;&#1604;&#1593;&#1608;&#1575;&#1605;&#1604; &#1575;&#1604;&#1580;&#1608;&#1610;&#1577;</div>
+            <div class="product-footer">
+              <div><div class="product-price">5 $</div><div class="product-unit">/ &#1605;&#178;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1576;&#1610;&#1575;&#1590; &#1582;&#1575;&#1585;&#1580;&#1610;', 5, '&#127968;')">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card" data-cat="finish" data-name="&#1605;&#1575;&#1580;&#1610;&#1603; &#1590;&#1594;&#1591; &#1593;&#1575;&#1604;&#1610;">
+          <div class="product-img">&#127912;</div>
+          <div class="product-body">
+            <div class="product-cat">&#1578;&#1588;&#1591;&#1610;&#1576;&#1575;&#1578; &#1608;&#1583;&#1607;&#1575;&#1606;</div>
+            <div class="product-name">&#1605;&#1575;&#1580;&#1610;&#1603; &#1590;&#1594;&#1591; &#1593;&#1575;&#1604;&#1610; 23</div>
+            <div class="product-desc">&#1583;&#1607;&#1575;&#1606; &#1590;&#1594;&#1591; &#1593;&#1575;&#1604;&#1610; &#1604;&#1604;&#1580;&#1583;&#1585;&#1575;&#1606; &#1575;&#1604;&#1582;&#1575;&#1585;&#1580;&#1610;&#1577;</div>
+            <div class="product-footer">
+              <div><div class="product-price">7 $</div><div class="product-unit">/ &#1605;&#178;</div></div>
+              <button class="add-btn" onclick="addToCart(this, '&#1605;&#1575;&#1580;&#1610;&#1603; &#1590;&#1594;&#1591; &#1593;&#1575;&#1604;&#1610; 23', 7, '&#127912;')">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+
+  <button class="cart-toggle" onclick="toggleCart()">
+    &#128722; &#1575;&#1604;&#1587;&#1604;&#1577;
+    <span class="cart-badge" id="cartBadge" style="display:none">0</span>
+  </button>
+  <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+  <div class="cart-panel" id="cartPanel">
+    <div class="cart-head">
+      <h2>&#128722; &#1587;&#1604;&#1577; &#1575;&#1604;&#1591;&#1604;&#1576;&#1575;&#1578;</h2>
+      <button class="cart-close" onclick="toggleCart()">&#10005;</button>
+    </div>
+    <div class="cart-items" id="cartItems">
+      <div class="cart-empty"><div class="cart-empty-icon">&#128722;</div><p>&#1575;&#1604;&#1587;&#1604;&#1577; &#1601;&#1575;&#1585;&#1594;&#1577;<br>&#1571;&#1590;&#1601; &#1605;&#1606;&#1578;&#1580;&#1575;&#1578; &#1605;&#1606; &#1575;&#1604;&#1602;&#1575;&#1574;&#1605;&#1577;</p></div>
+    </div>
+    <div class="cart-foot" id="cartFoot" style="display:none">
+      <div class="cart-summary">
+        <div class="summary-row"><span>&#1593;&#1583;&#1583; &#1575;&#1604;&#1571;&#1589;&#1606;&#1575;&#1601;</span><span id="itemCount">0</span></div>
+        <div class="summary-total"><span>&#1575;&#1604;&#1605;&#1580;&#1605;&#1608;&#1593; &#1575;&#1604;&#1603;&#1604;&#1610;</span><span id="grandTotal">0 $</span></div>
+      </div>
+      <button class="checkout-btn" onclick="openCheckout()">&#128203; &#1573;&#1578;&#1605;&#1575;&#1605; &#1575;&#1604;&#1591;&#1604;&#1576; &#8212; &#1593;&#1585;&#1590; &#1575;&#1604;&#1601;&#1575;&#1578;&#1608;&#1585;&#1577; &#9654;&#65039;</button>
+      <button class="clear-btn" onclick="clearCart()">&#128465;&#65039; &#1578;&#1601;&#1585;&#1610;&#1594; &#1575;&#1604;&#1587;&#1604;&#1577;</button>
+    </div>
+  </div>
+
+  <div class="checkout-modal" id="checkoutModal">
+    <div class="checkout-box">
+      <button onclick="closeCheckout()" style="position:absolute;top:16px;left:16px;background:var(--surface-hover);border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:1rem;color:var(--text-secondary)">&#10005;</button>
+      <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:4px">&#128203; &#1578;&#1601;&#1575;&#1589;&#1610;&#1604; &#1575;&#1604;&#1591;&#1604;&#1576;</h2>
+      <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:20px" id="orderSummaryText"></p>
+      <form onsubmit="goToInvoice(event)" id="shopForm">
+        <div class="form-group"><label>&#1575;&#1604;&#1575;&#1587;&#1605; &#1575;&#1604;&#1603;&#1575;&#1605;&#1604; *</label><input type="text" id="clientName" class="input" placeholder="&#1605;&#1581;&#1605;&#1583; &#1571;&#1581;&#1605;&#1583;" required></div>
+        <div class="form-group"><label>&#1585;&#1602;&#1605; &#1575;&#1604;&#1580;&#1608;&#1575;&#1604; *</label><input type="tel" id="clientPhone" class="input" placeholder="09XXXXXXXX" required></div>
+        <div class="form-group"><label>&#1575;&#1604;&#1593;&#1606;&#1608;&#1575;&#1606;</label><input type="text" id="clientAddress" class="input" placeholder="&#1575;&#1604;&#1605;&#1583;&#1610;&#1606;&#1577;, &#1575;&#1604;&#1581;&#1610;..."></div>
+        <div class="form-group" style="background:var(--surface-secondary);border-radius:10px;padding:14px 16px;">
+          <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:0">
+            <span style="font-weight:700">&#127991;&#65039; تفعيل خصم</span>
+            <div style="position:relative;width:38px;height:22px;flex-shrink:0">
+              <input type="checkbox" id="discountToggle" onchange="toggleDiscountField(this)" style="opacity:0;width:0;height:0;position:absolute">
+              <span id="discSlider" style="position:absolute;inset:0;background:var(--border-default);border-radius:999px;cursor:pointer;transition:background .2s"></span>
+              <span id="discKnob" style="position:absolute;width:16px;height:16px;left:3px;top:3px;background:white;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)"></span>
+            </div>
+          </label>
+          <div id="discountField" style="display:none;margin-top:12px;display:none;align-items:center;gap:10px">
+            <input type="number" id="discountPct" class="input" value="10" min="0" max="100" style="width:80px;text-align:center;font-weight:800;font-size:1.1rem">
+            <span style="font-weight:700;color:var(--text-secondary)">% خصم</span>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg" style="width:100%;margin-top:4px">&#128203; &#1593;&#1585;&#1590; &#1575;&#1604;&#1601;&#1575;&#1578;&#1608;&#1585;&#1577; &#9654;&#65039;</button>
+      </form>
+    </div>
+  </div></div>
+
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-brand"><div class="logo-icon">&#127959;&#65039;</div><div><div class="logo-main">Progressive Tagsverd</div><div class="logo-sub">&#128222; 0997913309</div></div></div>
+      <div class="footer-links"><a href="index.html">&#1575;&#1604;&#1585;&#1574;&#1610;&#1587;&#1610;&#1577;</a><a href="packages.html">&#1575;&#1604;&#1576;&#1575;&#1602;&#1575;&#1578;</a><a href="shop.html">&#1575;&#1604;&#1605;&#1578;&#1580;&#1585;</a><a href="contact.html">&#1578;&#1608;&#1575;&#1589;&#1604;</a></div>
+      <div class="footer-copy">&#169; 2025 Progressive Tagsverd</div>
+    </div>
+  </footer>
+
+  <script src="js/theme.js"></script>
+  <script>
+    let cart = {};
+
+    function addToCart(btn, name, price, icon) {
+      if (cart[name]) { cart[name].qty++; } else { cart[name] = {name, price, icon, qty:1}; }
+      btn.textContent = "✓"; btn.style.background = "#22c55e";
+      setTimeout(() => { btn.textContent = "+"; btn.style.background = ""; }, 700);
+      renderCart();
+    }
+
+    function renderCart() {
+      const items = Object.values(cart);
+      const total = items.reduce((s,i) => s + i.price * i.qty, 0);
+      const qty = items.reduce((s,i) => s + i.qty, 0);
+      const badge = document.getElementById("cartBadge");
+      badge.textContent = qty;
+      badge.style.display = qty > 0 ? "inline-flex" : "none";
+      const container = document.getElementById("cartItems");
+      const foot = document.getElementById("cartFoot");
+      if (!items.length) {
+        container.innerHTML = "<div class=\"cart-empty\"><div class=\"cart-empty-icon\">🛒</div><p>السلة فارغة<br>أضف منتجات من القائمة</p></div>";
+        foot.style.display = "none";
+        return;
+      }
+      foot.style.display = "block";
+      container.innerHTML = items.map(item =>
+        "<div class=\"cart-item\">" +
+        "<div class=\"cart-item-icon\">" + item.icon + "</div>" +
+        "<div class=\"cart-item-info\">" +
+          "<div class=\"cart-item-name\">" + item.name + "</div>" +
+          "<div class=\"cart-item-price\">" + (item.price * item.qty).toFixed(1) + " $</div>" +
+        "</div>" +
+        "<div class=\"cart-item-controls\">" +
+          "<button class=\"qty-btn\" onclick=\"changeQty('" + item.name + "',-1)\">−</button>" +
+          "<span class=\"qty-num\">" + item.qty + "</span>" +
+          "<button class=\"qty-btn\" onclick=\"changeQty('" + item.name + "',1)\">+</button>" +
+          "<button class=\"remove-btn\" onclick=\"removeItem('" + item.name + "')\">🗑️</button>" +
+        "</div></div>"
+      ).join("");
+      document.getElementById("itemCount").textContent = items.length + " صنف";
+      document.getElementById("grandTotal").textContent = total.toFixed(1) + " $";
+    }
+
+    function changeQty(name, d) {
+      if (!cart[name]) return;
+      cart[name].qty += d;
+      if (cart[name].qty <= 0) delete cart[name];
+      renderCart();
+    }
+
+    function removeItem(name) { delete cart[name]; renderCart(); }
+    function clearCart() { cart = {}; renderCart(); }
+
+    function toggleCart() {
+      document.getElementById("cartPanel").classList.toggle("open");
+      document.getElementById("cartOverlay").classList.toggle("open");
+    }
+
+    function openCheckout() {
+      const items = Object.values(cart);
+      if (!items.length) { alert("السلة فارغة! أضف منتجات أولاً."); return; }
+      const subtotal = items.reduce((s,i) => s + i.price * i.qty, 0);
+      document.getElementById("orderSummaryText").textContent = items.length + " صنف — المجموع: " + subtotal.toFixed(1) + " $";
+      document.getElementById("checkoutModal").classList.add("open");
+      if (document.getElementById("cartPanel").classList.contains("open")) toggleCart();
+    }
+
+    function closeCheckout() {
+      document.getElementById("checkoutModal").classList.remove("open");
+    }
+
+    function toggleDiscountField(cb) {
+      const field = document.getElementById("discountField");
+      const slider = document.getElementById("discSlider");
+      const knob = document.getElementById("discKnob");
+      if (cb.checked) {
+        field.style.display = "flex";
+        slider.style.background = "#22c55e";
+        knob.style.transform = "translateX(16px)";
+      } else {
+        field.style.display = "none";
+        slider.style.background = "";
+        knob.style.transform = "";
+      }
+    }
+
+    function goToInvoice(e) {
+      e.preventDefault();
+      const items = Object.values(cart);
+      if (!items.length) { alert("السلة فارغة!"); return; }
+      const discOn = document.getElementById("discountToggle") ? document.getElementById("discountToggle").checked : false;
+      const discPct = discOn ? (parseFloat(document.getElementById("discountPct").value) || 0) : 0;
+      const invoiceData = {
+        name: document.getElementById("clientName").value,
+        phone: document.getElementById("clientPhone").value,
+        address: document.getElementById("clientAddress") ? document.getElementById("clientAddress").value : "",
+        items: items,
+        discountOn: discOn,
+        discountPct: discPct
+      };
+      localStorage.setItem("invoiceData", JSON.stringify(invoiceData));
+      window.location.href = "invoice.html";
+    }
+
+    function filterCat(cat, btn) {
+      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      let count = 0;
+      document.querySelectorAll(".product-card").forEach(c => {
+        const show = cat === "all" || c.dataset.cat === cat;
+        c.classList.toggle("hidden", !show);
+        if (show) count++;
+      });
+      document.getElementById("shopCount").textContent = count + " منتج";
+    }
+
+    function searchProducts(q) {
+      let count = 0;
+      document.querySelectorAll(".product-card").forEach(c => {
+        const match = c.dataset.name.toLowerCase().includes(q.toLowerCase());
+        c.classList.toggle("hidden", !match);
+        if (match) count++;
+      });
+      document.getElementById("shopCount").textContent = count + " منتج";
+    }
+
+    function toggleMobileMenu() { document.getElementById("mobileMenu").classList.toggle("open"); }
+
+    renderCart();
+  </script>
+</body>
+</html>
