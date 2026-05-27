@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>حمّل تطبيق الهندسية التقدمية</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #1a3a5c 0%, #c0392b 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 24px;
+      padding: 40px 30px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .logo {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      display: block;
+    }
+    h1 { font-size: 1.6rem; color: #1a3a5c; margin-bottom: 8px; }
+    .subtitle { color: #6b7280; font-size: 0.95rem; margin-bottom: 30px; }
+
+    .steps {
+      text-align: right;
+      margin-bottom: 30px;
+      background: #f8fafc;
+      border-radius: 14px;
+      padding: 20px;
+    }
+    .steps h3 { font-size: 0.95rem; color: #1a3a5c; margin-bottom: 14px; text-align: center; }
+
+    .device-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      justify-content: center;
+    }
+    .tab {
+      padding: 7px 18px;
+      border-radius: 20px;
+      border: 2px solid #1a3a5c;
+      background: #fff;
+      color: #1a3a5c;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all .2s;
+    }
+    .tab.active { background: #1a3a5c; color: #fff; }
+
+    .step-list { display: none; }
+    .step-list.active { display: block; }
+    .step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 0.88rem;
+      color: #374151;
+      line-height: 1.5;
+    }
+    .step-num {
+      background: #c0392b;
+      color: #fff;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.8rem;
+      flex-shrink: 0;
+    }
+
+    .btn-open {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      background: #c0392b;
+      color: #fff;
+      border-radius: 14px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      text-decoration: none;
+      margin-bottom: 12px;
+      transition: background .2s;
+    }
+    .btn-open:hover { background: #a93226; }
+
+    .btn-visit {
+      display: block;
+      width: 100%;
+      padding: 13px;
+      background: #f0f4f8;
+      color: #1a3a5c;
+      border-radius: 14px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background .2s;
+    }
+    .btn-visit:hover { background: #e2e8f0; }
+
+    .footer-note {
+      margin-top: 20px;
+      font-size: 0.78rem;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+  <img src="logo.svg" class="logo" alt="لوغو"/>
+  <h1>الهندسية التقدمية</h1>
+  <p class="subtitle">شركة مقاولات متعددة التخصصات — حمص سوريا</p>
+
+  <div class="steps">
+    <h3>📲 كيف تحمّل التطبيق؟</h3>
+    <div class="device-tabs">
+      <button class="tab active" onclick="showTab('android')">📱 أندرويد</button>
+      <button class="tab" onclick="showTab('iphone')">🍎 آيفون</button>
+      <button class="tab" onclick="showTab('pc')">💻 كمبيوتر</button>
+    </div>
+
+    <!-- أندرويد -->
+    <div class="step-list active" id="android">
+      <div class="step-item"><div class="step-num">1</div><span>اضغط زر "افتح الموقع" تحت</span></div>
+      <div class="step-item"><div class="step-num">2</div><span>اضغط على النقاط الثلاث ⋮ فوق يمين كروم</span></div>
+      <div class="step-item"><div class="step-num">3</div><span>اختر "إضافة إلى الشاشة الرئيسية"</span></div>
+      <div class="step-item"><div class="step-num">4</div><span>اضغط "إضافة" ✅ — التطبيق جاهز!</span></div>
+    </div>
+
+    <!-- آيفون -->
+    <div class="step-list" id="iphone">
+      <div class="step-item"><div class="step-num">1</div><span>افتح الرابط من متصفح Safari (مش كروم)</span></div>
+      <div class="step-item"><div class="step-num">2</div><span>اضغط زر المشاركة 📤 تحت الشاشة</span></div>
+      <div class="step-item"><div class="step-num">3</div><span>اختر "إضافة إلى الشاشة الرئيسية"</span></div>
+      <div class="step-item"><div class="step-num">4</div><span>اضغط "إضافة" ✅ — التطبيق جاهز!</span></div>
+    </div>
+
+    <!-- كمبيوتر -->
+    <div class="step-list" id="pc">
+      <div class="step-item"><div class="step-num">1</div><span>افتح الموقع من كروم على الكمبيوتر</span></div>
+      <div class="step-item"><div class="step-num">2</div><span>شوف فوق يمين شريط العنوان — في أيقونة تثبيت ⊕</span></div>
+      <div class="step-item"><div class="step-num">3</div><span>اضغط عليها واختر "Install"</span></div>
+      <div class="step-item"><div class="step-num">4</div><span>التطبيق بيفتح كنافذة مستقلة ✅</span></div>
+    </div>
+  </div>
+
+  <a href="https://aliahmad-1997.github.io/alhandasa-website/alhandasa-website/alhandasa/" class="btn-open">
+    🚀 افتح الموقع وحمّل التطبيق
+  </a>
+  <a href="https://aliahmad-1997.github.io/alhandasa-website/alhandasa-website/alhandasa/" class="btn-visit">
+    🌐 تصفح الموقع فقط
+  </a>
+
+  <p class="footer-note">© 2025 الهندسية التقدمية — حمص سوريا | 0986555105</p>
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.step-list').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>
