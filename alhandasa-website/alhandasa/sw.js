@@ -1,26 +1,17 @@
-const CACHE = "alhandasa-v1";
-const FILES = [
-  "./",
-  "./index.html",
-  "./packages.html",
-  "./contact.html",
-  "./shop.html",
-  "./sections.html",
-  "./css/styles.css",
-  "./css/custom.css",
-  "./js/theme.js",
-  "./logo.svg",
-  "./manifest.json"
-];
+const CACHE = "alhandasa-v2";
 
 self.addEventListener("install", e => {
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", e => {
   e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(FILES))
+    caches.keys().then(keys =>
+      Promise.all(keys.map(key => caches.delete(key)))
+    )
   );
 });
 
 self.addEventListener("fetch", e => {
-  e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request))
-  );
+  e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
 });
