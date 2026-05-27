@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <!-- الدائرة الحمراء الخارجية -->
+  <circle cx="60" cy="60" r="58" fill="#c0392b" stroke="#8e1a0e" stroke-width="2"/>
+  <!-- شكل المبنى الهندسي -->
+  <!-- البناء الرئيسي -->
+  <rect x="30" y="55" width="60" height="35" fill="white" opacity="0.95"/>
+  <!-- الطابق العلوي -->
+  <rect x="40" y="42" width="40" height="18" fill="white" opacity="0.95"/>
+  <!-- السقف المثلث -->
+  <polygon points="35,42 60,22 85,42" fill="white" opacity="0.95"/>
+  <!-- النوافذ -->
+  <rect x="36" y="60" width="10" height="12" fill="#c0392b"/>
+  <rect x="55" y="60" width="10" height="12" fill="#c0392b"/>
+  <rect x="74" y="60" width="10" height="12" fill="#c0392b"/>
+  <!-- باب المدخل -->
+  <rect x="50" y="72" width="20" height="18" fill="#c0392b"/>
+  <!-- الحرف P و E -->
+  <text x="60" y="105" font-family="Arial" font-size="9" fill="white" text-anchor="middle" font-weight="bold">PE</text>
+</svg>
