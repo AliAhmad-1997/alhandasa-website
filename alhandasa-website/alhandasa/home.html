@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css"/>
+  <link rel="stylesheet" href="css/enhancements.css">
   <link rel="stylesheet" href="css/custom.css">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#c0392b">
@@ -59,17 +61,17 @@
   <section class="hero">
     <div class="hero-bg"></div>
     <div class="hero-content">
-      <div class="hero-badge">✦ شركة مقاولات معتمدة منذ 2005</div>
-      <h1 class="hero-title">نبني المستقبل<br><span class="hero-highlight">بأيدٍ هندسية متقدمة</span></h1>
-      <p class="hero-desc">
+      <div class="hero-badge" data-aos="fade-down">✦ شركة مقاولات معتمدة منذ 2005</div>
+      <h1 class="hero-title" data-aos="fade-up" data-aos-delay="100">نبني المستقبل<br><span class="hero-highlight">بأيدٍ هندسية متقدمة</span></h1>
+      <p class="hero-desc" data-aos="fade-up" data-aos-delay="200">
         الشركة الهندسية التقدمية — رائدة في مجال المقاولات والإنشاءات، نقدم حلولاً هندسية شاملة
         بأعلى معايير الجودة والكفاءة. من التصميم إلى التسليم، نحن شريكك الموثوق.
       </p>
-      <div class="hero-actions">
+      <div class="hero-actions" data-aos="fade-up" data-aos-delay="300">
         <a href="packages.html" class="btn btn-primary btn-lg">استعرض باقاتنا</a>
         <a href="sections.html" class="btn btn-secondary btn-lg">تعرف على أقسامنا</a>
       </div>
-      <div class="hero-stats">
+      <div class="hero-stats" data-aos="fade-up" data-aos-delay="400">
         <div class="stat-item">
           <span class="stat-num">+500</span>
           <span class="stat-label">مشروع منجز</span>
@@ -126,7 +128,7 @@
         نمتلك كوادر بشرية مؤهلة وخبرات واسعة في تنفيذ مشاريع البناء والإنشاء بجميع أنواعها.
       </p>
       <div class="about-grid">
-        <div class="about-card card">
+        <div class="about-card card" data-aos="fade-up">
           <div class="about-icon">🎯</div>
           <h3>رؤيتنا</h3>
           <p>أن نكون الشركة الهندسية الأولى في المنطقة، ونموذجاً يُحتذى به في الجودة والابتكار.</p>
@@ -152,7 +154,7 @@
       <h2 class="section-title">أقسامنا المتخصصة</h2>
       <p class="section-desc">نغطي جميع احتياجاتك الإنشائية تحت سقف واحد</p>
       <div class="services-grid">
-        <div class="service-card card card-hover">
+        <div class="service-card card card-hover" data-aos="fade-up">
           <div class="service-icon">🏗️</div>
           <h3>المقاولات العامة</h3>
           <p>تنفيذ المشاريع الإنشائية بجميع أنواعها من صفر</p>
@@ -191,6 +193,35 @@
       </div>
       <div class="center-btn">
         <a href="sections.html" class="btn btn-secondary btn-lg">عرض جميع الأقسام</a>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════
+       معرض الأعمال
+  ══════════════════════════════════════════ -->
+  <section class="gallery-strip">
+    <div class="section-tag" data-aos="fade-up">معرض الأعمال</div>
+    <h2 class="section-title" data-aos="fade-up" data-aos-delay="100">من أعمالنا المنجزة</h2>
+    <p class="section-desc" data-aos="fade-up" data-aos-delay="150">مشاريع حقيقية نفّذناها بأيدي فريقنا المتخصص في حمص وسوريا</p>
+
+    <div class="gallery-grid">
+      <div class="gallery-card" data-aos="fade-up" data-aos-delay="100">
+        <img src="luxury-interior.png" alt="تشطيبات داخلية فاخرة"/>
+        <div class="gallery-card-label">🏠 تشطيبات داخلية فاخرة — ديكور وإنارة LED</div>
+      </div>
+      <div class="gallery-card" data-aos="fade-up" data-aos-delay="200">
+        <img src="luxury-bathroom.png" alt="حمام فاخر"/>
+        <div class="gallery-card-label">🚿 تشطيب حمام فاخر — سيراميك وصحيات برنس</div>
+      </div>
+      <div class="gallery-card" data-aos="fade-up" data-aos-delay="300">
+        <img src="team-working.png" alt="فريق العمل"/>
+        <div class="gallery-card-label">👷 فريقنا أثناء تمديد السباكة والكهرباء</div>
+      </div>
+      <div class="gallery-card" data-aos="fade-up" data-aos-delay="400">
+        <img src="construction-site.png" alt="موقع بناء"/>
+        <div class="gallery-card-label">🏗️ مشروع إنشائي كامل — مقاولات عامة</div>
       </div>
     </div>
   </section>
@@ -235,5 +266,8 @@
     }
   </script>
 <a href="https://wa.me/00963986555105" target="_blank" style="position:fixed;bottom:24px;left:24px;z-index:9999;background:#25d366;color:#fff;border-radius:50%;width:58px;height:58px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;box-shadow:0 4px 16px rgba(0,0,0,0.25);text-decoration:none;" title="تواصل عبر واتساب">💬</a>
+
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+  <script src="js/enhancements.js"></script>
 </body>
 </html>
