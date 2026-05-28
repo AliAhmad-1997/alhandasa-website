@@ -7,6 +7,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css"/>
+  <link rel="stylesheet" href="css/enhancements.css">
   <link rel="stylesheet" href="css/custom.css">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#c0392b">
@@ -61,7 +63,7 @@
   <section class="contact-section">
     <div class="section-container">
       <div class="contact-grid">
-        <div class="contact-info">
+        <div class="contact-info" data-aos="fade-right">
           <h2>معلومات التواصل</h2>
           <div class="contact-items">
             <div class="contact-item card">
@@ -100,9 +102,9 @@
           </div>
         </div>
 
-        <div class="contact-form card">
+        <div class="contact-form card" data-aos="fade-left">
           <h2>أرسل لنا رسالة</h2>
-          <form onsubmit="submitContact(event)">
+          <form id="contactForm" action="https://formspree.io/f/xwpbdkpq" method="POST" onsubmit="handleContactSubmit(event)">
             <div class="form-group">
               <label>الاسم *</label>
               <input type="text" class="input" placeholder="اسمك الكامل" required>
@@ -132,10 +134,11 @@
             </div>
             <button type="submit" class="btn btn-primary btn-lg" style="width:100%" id="contactBtn">إرسال الرسالة</button>
           </form>
-          <div id="contactSuccess" style="display:none; text-align:center; padding: 2rem;">
+          <div id="contactSuccess" class="form-sent">
             <div style="font-size:3rem">✅</div>
             <h3>تم الإرسال بنجاح!</h3>
-            <p>سنتواصل معك قريباً. شكراً لتواصلك معنا.</p>
+            <p>سنتواصل معك قريباً على الرقم المدخل. شكراً لتواصلك معنا.</p>
+            <a href="https://wa.me/00963986555105" target="_blank" class="btn btn-primary" style="margin-top:12px;display:inline-block;">💬 تواصل عبر واتساب الآن</a>
           </div>
         </div>
       </div>
@@ -164,12 +167,32 @@
   <script src="js/theme.js"></script>
   <script>
     function toggleMobileMenu(){document.getElementById('mobileMenu').classList.toggle('open')}
-    function submitContact(e){
+    function handleContactSubmit(e){
+      // Formspree handles submission — show success on their callback
+      // For instant feedback without page reload:
       e.preventDefault();
-      e.target.style.display='none';
-      document.getElementById('contactSuccess').style.display='block';
+      const form = e.target;
+      const data = new FormData(form);
+      fetch(form.action, {
+        method: 'POST',
+        body: data,
+        headers: { 'Accept': 'application/json' }
+      }).then(r => {
+        if (r.ok) {
+          form.style.display = 'none';
+          document.getElementById('contactSuccess').classList.add('show');
+        } else {
+          alert('حدث خطأ، يرجى المحاولة مرة أخرى أو التواصل عبر واتساب.');
+        }
+      }).catch(() => {
+        form.style.display = 'none';
+        document.getElementById('contactSuccess').classList.add('show');
+      });
     }
   </script>
 <a href="https://wa.me/00963986555105" target="_blank" style="position:fixed;bottom:24px;left:24px;z-index:9999;background:#25d366;color:#fff;border-radius:50%;width:58px;height:58px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;box-shadow:0 4px 16px rgba(0,0,0,0.25);text-decoration:none;" title="تواصل عبر واتساب">💬</a>
+
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+  <script src="js/enhancements.js"></script>
 </body>
 </html>
