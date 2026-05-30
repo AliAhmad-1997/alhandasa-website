@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الباقات والعروض — الهندسية التقدمية</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css"/>
+  <link rel="stylesheet" href="css/enhancements.css">
+  <link rel="stylesheet" href="css/custom.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#c0392b">
+  <script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js")}</script>
+<style>
+.nav-download{background:#c0392b!important;color:#fff!important;padding:6px 14px!important;border-radius:20px!important;font-weight:700!important;}
+
+/* ══ حاسبة التكاليف — تصميم جديد ══ */
+.calc-box {
+  max-width: 700px;
+  margin: 0 auto;
+  background: var(--card-bg, #fff);
+  border-radius: 20px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.10);
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.07);
+}
+
+/* رأس الحاسبة */
+.calc-header {
+  background: linear-gradient(135deg, #1a3a5c 0%, #c0392b 100%);
+  padding: 24px 28px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.calc-header-icon { font-size: 2rem; }
+.calc-header-text h3 {
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin: 0 0 2px;
+}
+.calc-header-text p { color: rgba(255,255,255,0.75); font-size: .82rem; margin: 0; }
+
+/* جسم الحاسبة */
+.calc-body { padding: 24px 28px; display: flex; flex-direction: column; gap: 18px; }
+
+/* صفوف المدخلات */
+.calc-row { display: flex; flex-direction: column; gap: 6px; }
+.calc-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media(max-width:560px){ .calc-row-2 { grid-template-columns: 1fr; } }
+
+.calc-label {
+  font-size: .8rem;
+  font-weight: 700;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.calc-label-icon { font-size: 1rem; }
+
+.calc-input, .calc-select {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  font-family: Cairo, sans-serif;
+  font-size: .92rem;
+  font-weight: 600;
+  color: #222;
+  background: #fafafa;
+  transition: border-color .2s, box-shadow .2s;
+  outline: none;
+  box-sizing: border-box;
+}
+.calc-input:focus, .calc-select:focus {
+  border-color: #1a3a5c;
+  box-shadow: 0 0 0 3px rgba(26,58,92,0.10);
+  background: #fff;
+}
+
+/* فاصل العملة */
+.calc-currency-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 2px 0;
+}
+.calc-currency-divider::before,
+.calc-currency-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #eee;
+}
+.calc-currency-label {
+  font-size: .75rem;
+  color: #aaa;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* أزرار اختيار العملة */
+.calc-currency-btns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.calc-currency-btn {
+  flex: 1;
+  min-width: 120px;
+  padding: 10px 14px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  background: #fafafa;
+  font-family: Cairo, sans-serif;
+  font-size: .85rem;
+  font-weight: 700;
+  color: #666;
+  cursor: pointer;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.calc-currency-btn:hover { border-color: #1a3a5c; color: #1a3a5c; background: #f0f4f8; }
+.calc-currency-btn.active-usd {
+  border-color: #1a3a5c;
+  background: #1a3a5c;
+  color: #fff;
+}
+.calc-currency-btn.active-syp {
+  border-color: #c0392b;
+  background: #c0392b;
+  color: #fff;
+}
+.calc-currency-btn.active-both {
+  border-color: #7c3aed;
+  background: #7c3aed;
+  color: #fff;
+}
+
+/* حقل سعر الصرف */
+.calc-rate-row {
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+  animation: fadeIn .3s ease;
+}
+.calc-rate-row.visible { display: flex; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+.calc-rate-inner { display: flex; align-items: center; gap: 10px; }
+.calc-rate-badge {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-size: .8rem;
+  font-weight: 700;
+  white-space: nowrap;
+  display: none;
+}
+
+/* نتائج الحساب */
+.calc-result {
+  display: none;
+  flex-direction: column;
+  gap: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1.5px solid #e8e8e8;
+  animation: fadeIn .35s ease;
+}
+.calc-result.show { display: flex; }
+
+.calc-result-header {
+  background: #f8fafc;
+  padding: 12px 18px;
+  font-size: .78rem;
+  font-weight: 800;
+  color: #888;
+  border-bottom: 1px solid #eee;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.calc-result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+@media(max-width:480px){ .calc-result-grid { grid-template-columns: 1fr; } }
+
+.calc-result-item {
+  padding: 16px 18px;
+  border-bottom: 1px solid #f0f0f0;
+  border-left: 1px solid #f0f0f0;
+  transition: background .2s;
+}
+.calc-result-item:hover { background: #fafafa; }
+.calc-result-label { font-size: .72rem; font-weight: 700; color: #999; margin-bottom: 5px; text-transform: uppercase; letter-spacing: .04em; }
+.calc-result-value { font-size: 1.2rem; font-weight: 900; color: #1a3a5c; line-height: 1.2; }
+
+/* خانات الليرة */
+.calc-result-item.syp-row { background: #fffbeb; }
+.calc-result-item.syp-row .calc-result-label { color: #b45309; }
+.calc-result-item.syp-row .calc-result-value { color: #92400e; font-size: 1.05rem; }
+
+/* ملاحظة */
+.calc-note {
+  padding: 10px 18px;
+  font-size: .72rem;
+  color: #aaa;
+  background: #fafafa;
+  border-top: 1px solid #f0f0f0;
+  margin: 0;
+}
+
+/* أزرار الحاسبة */
+.calc-actions { display: flex; flex-direction: column; gap: 10px; }
+.btn-calc {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #1a3a5c, #2563a8);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-family: Cairo, sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: opacity .2s, transform .1s;
+}
+.btn-calc:hover { opacity: .92; transform: translateY(-1px); }
+.btn-calc:active { transform: translateY(0); }
+.btn-calc.customize { background: linear-gradient(135deg, #374151, #1f2937); }
+
+.btn-wa {
+  display: none;
+  width: 100%;
+  padding: 13px;
+  background: #25d366;
+  color: #fff;
+  border-radius: 12px;
+  font-family: Cairo, sans-serif;
+  font-size: .95rem;
+  font-weight: 800;
+  text-align: center;
+  text-decoration: none;
+  transition: opacity .2s;
+  box-sizing: border-box;
+}
+.btn-wa.show { display: block; }
+.btn-wa:hover { opacity: .9; }
+
+/* ══ معرض قبل/بعد ══ */
+.gallery-section { padding: 60px 0; }
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 36px;
+}
+.gallery-card {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  background: #111;
+  position: relative;
+}
+.gallery-label {
+  position: absolute;
+  top: 0; right: 0; left: 0;
+  z-index: 10;
+  background: linear-gradient(180deg, rgba(0,0,0,0.65) 0%, transparent 100%);
+  color: #fff;
+  font-size: .85rem;
+  font-weight: 800;
+  padding: 12px 14px 24px;
+  font-family: Cairo, sans-serif;
+}
+/* ba-wrap: الـ slider */
+.ba-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/10;
+  overflow: hidden;
+  cursor: col-resize;
+  user-select: none;
+}
+.ba-img-after {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.ba-overlay {
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 50%;
+  overflow: hidden;
+  transition: none;
+}
+.ba-img-before {
+  position: absolute;
+  top: 0; right: 0;
+  width: 100vw; max-width: 800px;
+  height: 100%;
+  object-fit: cover;
+}
+.ba-line {
+  position: absolute;
+  top: 0; bottom: 0;
+  right: 50%;
+  width: 3px;
+  background: #fff;
+  box-shadow: 0 0 8px rgba(0,0,0,0.5);
+  cursor: col-resize;
+  z-index: 5;
+}
+.ba-line::after {
+  content: '⟺';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  color: #333;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  line-height: 34px;
+  text-align: center;
+}
+.ba-tag {
+  position: absolute;
+  bottom: 12px;
+  z-index: 6;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  font-size: .72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-family: Cairo, sans-serif;
+  backdrop-filter: blur(4px);
+}
+.ba-tag-b { right: 12px; }
+.ba-tag-a { left: 12px; }
+@media(max-width:600px){
+  .gallery-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <img src="logo.svg" style="width:48px;height:48px;border-radius:50%;" alt="لوغو الهندسية التقدمية"/>
+        <div class="logo-text">
+          <span class="logo-main">الهندسية التقدمية</span>
+          <span class="logo-sub">سباكة • كهرباء • تشطيبات</span>
+        </div>
+      </div>
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">الرئيسية</a></li>
+        <li><a href="sections.html" class="nav-link">الأقسام</a></li>
+        <li><a href="packages.html" class="nav-link active">الباقات والعروض</a></li>
+        <li><a href="gallery.html" class="nav-link">معرض الأعمال</a></li>
+        <li><a href="shop.html" class="nav-link">&#1575;&#1604;&#1605;&#1578;&#1580;&#1585; &#1575;&#1604;&#1575;&#1582;&#1578;&#1610;&#1575;&#1585;&#1610;</a></li>
+        <li><a href="about.html" class="nav-link">من نحن</a></li>
+        <li><a href="contact.html" class="nav-link">تواصل معنا</a></li>
+        <li><a href="download.html" class="nav-link nav-download">📲 حمّل التطبيق</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="theme-toggle" title="تبديل الوضع">
+          <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <a href="#order-form" class="btn btn-primary">اطلب الآن</a>
+      </div>
+      <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="index.html" class="mobile-link">الرئيسية</a>
+      <a href="sections.html" class="mobile-link">الأقسام</a>
+      <a href="packages.html" class="mobile-link">الباقات والعروض</a>
+      <a href="gallery.html" class="mobile-link">معرض الأعمال</a>
+      <a href="shop.html" class="mobile-link">&#1575;&#1604;&#1605;&#1578;&#1580;&#1585; &#1575;&#1604;&#1575;&#1582;&#1578;&#1610;&#1575;&#1585;&#1610;</a>
+      <a href="about.html" class="mobile-link">من نحن</a>
+      <a href="contact.html" class="mobile-link">تواصل معنا</a>
+      <a href="download.html" class="mobile-link" style="color:#c0392b;font-weight:700;">📲 حمّل التطبيق</a>
+    </div>
+  </nav>
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="section-container">
+      <div class="section-tag">عروض حصرية</div>
+      <h1 class="page-title">الباقات والعروض</h1>
+      <p class="page-desc">ثلاث باقات مدروسة تناسب كل الميزانيات — من الأساسي إلى الفاخر</p>
+    </div>
+  </div>
+
+  <!-- OFFER BANNER -->
+  <div class="offer-banner">
+    <div class="section-container">
+      <div class="offer-banner-inner">
+        <span class="offer-fire">🔥</span>
+        <span class="offer-text">عرض محدود: استشارة مجانية عند الحجز الآن!</span>
+        <span class="offer-countdown">📞 0986555105</span>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════
+       حاسبة التكاليف
+  ══════════════════════════════════════════ -->
+  <section class="calc-section">
+    <div class="section-tag" data-aos="fade-up">احسب مشروعك</div>
+    <h2 class="section-title" data-aos="fade-up" data-aos-delay="100">حاسبة التكاليف التفاعلية</h2>
+    <p class="section-desc" data-aos="fade-up" data-aos-delay="150">اختر الباقة وأدخل المساحة — وسنحسب لك التكلفة فوراً</p>
+
+    <div class="calc-box" data-aos="fade-up" data-aos-delay="200">
+
+      <!-- رأس الحاسبة -->
+      <div class="calc-header">
+        <div class="calc-header-icon">🧮</div>
+        <div class="calc-header-text">
+          <h3>حاسبة التكاليف التفاعلية</h3>
+          <p>اختر الباقة والمساحة والعملة — وسنحسب لك فوراً</p>
+        </div>
+      </div>
+
+      <!-- جسم الحاسبة -->
+      <div class="calc-body">
+
+        <!-- صف: الباقة + المساحة -->
+        <div class="calc-row-2">
+          <div class="calc-row">
+            <label class="calc-label"><span class="calc-label-icon">📦</span> نوع الباقة</label>
+            <select class="calc-select" id="calcType" onchange="calcCost()">
+              <option value="">اختر الباقة...</option>
+              <optgroup label="── باقات التقسيط ──">
+                <option value="taqsit2">🏠 التقسيط الدرجة الثانية — 85$</option>
+                <option value="taqsit1">💳 التقسيط الدرجة الأولى — 110$</option>
+              </optgroup>
+              <optgroup label="── الباقات الشاملة ──">
+                <option value="basic">🏠 الاقتصادية — 65$</option>
+                <option value="standard">🏢 المتوسطة — 120$</option>
+                <option value="momtaza">⭐ الممتازة — 180$</option>
+                <option value="premium">👑 الفاخرة — 200$</option>
+                <option value="super">💎 السوبر فاخرة — 300$</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="calc-row">
+            <label class="calc-label"><span class="calc-label-icon">📐</span> المساحة الإجمالية (م²)</label>
+            <input class="calc-input" id="calcArea" type="number" min="1" max="10000"
+                   placeholder="مثال: 120" oninput="calcCost()"/>
+          </div>
+        </div>
+
+        <!-- فاصل: اختيار العملة -->
+        <div class="calc-currency-divider">
+          <span class="calc-currency-label">💱 عرض النتيجة بـ</span>
+        </div>
+
+        <div class="calc-currency-btns">
+          <button class="calc-currency-btn active-usd" id="btnUSD" onclick="setCurrency('usd')">
+            💵 دولار فقط
+          </button>
+          <button class="calc-currency-btn" id="btnSYP" onclick="setCurrency('syp')">
+            🇸🇾 ليرة سورية فقط
+          </button>
+          <button class="calc-currency-btn" id="btnBOTH" onclick="setCurrency('both')">
+            💱 كلاهما معاً
+          </button>
+        </div>
+
+        <!-- حقل سعر الصرف — يظهر عند اختيار ليرة -->
+        <div class="calc-rate-row" id="calcRateRow">
+          <label class="calc-label"><span class="calc-label-icon">🇸🇾</span> سعر الصرف (ليرة / دولار)</label>
+          <div class="calc-rate-inner">
+            <input class="calc-input" id="calcRate" type="number" min="1" max="9999999"
+                   placeholder="مثال: 13000" oninput="calcCost()" style="max-width:200px;"/>
+            <span class="calc-rate-badge" id="calcRateBadge"></span>
+          </div>
+        </div>
+
+        <!-- النتائج -->
+        <div class="calc-result" id="calcResult">
+          <div class="calc-result-header">📊 نتيجة الحساب</div>
+          <div class="calc-result-grid" id="calcResultGrid">
+            <!-- دولار -->
+            <div class="calc-result-item" id="r-total-usd">
+              <div class="calc-result-label">التكلفة الإجمالية</div>
+              <div class="calc-result-value" id="calcTotal">—</div>
+            </div>
+            <div class="calc-result-item" id="r-m2-usd">
+              <div class="calc-result-label">سعر المتر</div>
+              <div class="calc-result-value" id="calcPriceM2">—</div>
+            </div>
+            <div class="calc-result-item" id="r-m12-usd">
+              <div class="calc-result-label">قسط شهري / 12 شهر</div>
+              <div class="calc-result-value" id="calcMonthly12">—</div>
+            </div>
+            <div class="calc-result-item" id="r-m24-usd">
+              <div class="calc-result-label">قسط شهري / 24 شهر</div>
+              <div class="calc-result-value" id="calcMonthly24">—</div>
+            </div>
+            <!-- ليرة سورية -->
+            <div class="calc-result-item syp-row" id="r-total-syp" style="display:none">
+              <div class="calc-result-label">🇸🇾 التكلفة بالليرة</div>
+              <div class="calc-result-value" id="calcSypTotal">—</div>
+            </div>
+            <div class="calc-result-item syp-row" id="r-m2-syp" style="display:none">
+              <div class="calc-result-label">🇸🇾 سعر المتر بالليرة</div>
+              <div class="calc-result-value" id="calcSypM2">—</div>
+            </div>
+            <div class="calc-result-item syp-row" id="r-m12-syp" style="display:none">
+              <div class="calc-result-label">🇸🇾 قسط 12 شهر بالليرة</div>
+              <div class="calc-result-value" id="calcSypMonthly12">—</div>
+            </div>
+            <div class="calc-result-item syp-row" id="r-m24-syp" style="display:none">
+              <div class="calc-result-label">🇸🇾 قسط 24 شهر بالليرة</div>
+              <div class="calc-result-value" id="calcSypMonthly24">—</div>
+            </div>
+          </div>
+          <p class="calc-note">* الأسعار تقديرية وتشمل المواد والعمالة — قد تختلف حسب التفاصيل</p>
+        </div>
+
+        <!-- أزرار -->
+        <div class="calc-actions">
+          <button class="btn-calc" onclick="calcCost()">🧮 احسب الآن</button>
+          <a class="btn-wa" id="btnWhatsapp" href="#" target="_blank">
+            💬 أرسل المقايسة للمكتب عبر واتساب
+          </a>
+        </div>
+
+      </div><!-- /calc-body -->
+    </div>
+  </section>
+
+  <!-- PACKAGES -->
+  <section class="packages-section">
+    <div class="section-container">
+      <div class="packages-grid">
+
+        <!-- ══════════════════════════════════
+             باقة 1 — الاقتصادية
+        ══════════════════════════════════ -->
+        <div class="package-card card" data-aos="fade-up">
+          <div class="pkg-header pkg-basic">
+            <div class="pkg-icon">🏠</div>
+            <h3 class="pkg-name">الباقة الاقتصادية</h3>
+            <p class="pkg-desc">مثالية للغرف والشقق الصغيرة</p>
+          </div>
+          <div class="pkg-price">
+            <span class="price-new">65 $</span>
+            <span class="price-note">للغرفة الواحدة</span>
+          </div>
+
+          <!-- السباكة -->
+          <div class="pkg-section-title">💧 السباكة</div>
+          <ul class="pkg-features">
+            <li><span class="feat-check">✓</span> أنابيب PPR بارد 20mm — ساخن 25mm (ماركة السعد)</li>
+            <li><span class="feat-check">✓</span> مواسير سماكة 1 إنش (31.2) و 2 إنش (36)</li>
+            <li><span class="feat-check">✓</span> 10 برميل أبيض/أزرق بلاستيك — كفالة 5 سنوات (المسعود)</li>
+            <li><span class="feat-check">✓</span> زنوبيا + زنوبيا دعسة</li>
+            <li><span class="feat-check">✓</span> سخان إيطالي 17 كيلو (البهاء)</li>
+            <li><span class="feat-check">✓</span> راصور + فرنجي + قازان</li>
+            <li><span class="feat-check">✓</span> تواليت شرق + خرطوم تواليت</li>
+            <li><span class="feat-check">✓</span> مصافي + مياه مالحة وحلوة</li>
+            <li><span class="feat-check">✓</span> حنفيات نحاس صيني (زاهية) + خلاطات</li>
+            <li><span class="feat-check">✓</span> دوش + مغاسل + قصبة (زاهية)</li>
+          </ul>
+
+          <!-- الكهرباء -->
+          <div class="pkg-section-title">⚡ الكهرباء</div>
+          <ul class="pkg-features">
+            <li><span class="feat-check">✓</span> أسلاك: 6mm رئيسي — 1.5mm مفرد — 1mm مزدوج (لينا)</li>
+            <li><span class="feat-check">✓</span> مفاتيح برايز 3mm + ليد</li>
+            <li><span class="feat-check">✓</span> 16 مفرد لكل غرفة — 32 مزدوج رئيسي</li>
+            <li><span class="feat-check">✓</span> قواطع + علب + اكسسوارات</li>
+            <li><span class="feat-check">✓</span> إنارة + ليد + نيولات</li>
+            <li><span class="feat-check">✓</span> دينمو كانديلا</li>
+          </ul>
+
+          <!-- التشطيبات -->
+          <div class="pkg-section-title">🎨 التشطيبات</div>
+          <ul class="pkg-features">
+            <li><span class="feat-check">✓</span> شبابيك + أبواب ألمنيوم مسالكو فضي</li>
+            <li><span class="feat-check">✓</span> مصيافي سماكة 3cm لجميع الشبابيك</li>
+            <li><span class="feat-check">✓</span> بلاط حسواني 30×30 / سيراميك زنوبيا 50×50</li>
+            <li><span class="feat-check">✓</span> حمام ومطبخ زنوبيا 4 (60×30)</li>
+            <li><span class="feat-check">✓</span> غرانيت تركي 3cm — جرن حجر 60cm</li>
+            <li><span class="feat-check">✓</span> MDF صيني جاهز</li>
+            <li><span class="feat-check">✓</span> طرش 3 أوجه (جدران + نعلة + أرضية)</li>
+            <li><span class="feat-check">✓</span> بياض داخلي وخارجي</li>
+            <li class="feat-disabled"><span class="feat-x">✗</span> خشب سويد سد كامل</li>
+            <li class="feat-disabled"><span class="feat-x">✗</span> صيني برنس فاخر</li>
+          </ul>
+
+          <button class="btn btn-secondary pkg-btn" onclick="openOrder('الباقة الاقتصادية', '65$')">اطلب هذه الباقة</button>
+          <button class="btn btn-outline pkg-btn" onclick="openPackageBuilder('pkg_65')" style="background:transparent;border:2px solid #1a3a5c;color:#1a3a5c;margin-top:8px;width:100%;padding:10px;border-radius:8px;font-family:Cairo,sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='#1a3a5c';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1a3a5c'">🔧 خصّص الباقة</button>
+        </div>
+
+        <!-- ══════════════════════════════════
+             باقة 2 — المتوسطة
+        ══════════════════════════════════ -->
+        <div class="package-card card pkg-featured" data-aos="fade-up" data-aos-delay="100">
+          <div class="pkg-badge-top">الأكثر طلباً ⭐</div>
+          <div class="pkg-header pkg-standard">
+            <div class="pkg-icon">🏢</div>
+            <h3 class="pkg-name">الباقة المتوسطة</h3>
+            <p class="pkg-desc">للشقق والمنازل المتوسطة</p>
+          </div>
+          <div class="pkg-price">
+            <span class="price-old">150 $</span>
+            <span class="price-new">120 $</span>
+            <span class="price-note">خصم 20%</span>
+          </div>
+
+          <!-- السباكة -->
+          <div class="pkg-section-title">💧 السباكة المحسّنة</div>
+          <ul class="pkg-features">
+            <li><span class="feat-check">✓</span> كل ما في الاقتصادية +</li>
+            <li><span class="feat-check">✓</span> PPR ساخن 32mm (ماركة السعد)</li>
+            <li><span class="feat-check">✓</span> زاهية — ليلك — تيب فاخر</li>
+            <li><span class="feat-check">✓</span> خزان مياه + صحية متكاملة</li>
+            <li><span class="feat-check">✓</span> مصيافي حمام وتواليت مستقل</li>
+            <li><span class="feat-check">✓</span> خلاطات صيني (برنس)</li>
+          </ul>
+
+          <!-- الكهرباء -->
+          <div class="pkg-section-title">⚡ الكهرباء المحسّنة</div>
+          <ul class="pkg-features">
+            <li><span class="feat-check">✓</span> كل ما في الاقتصادية +</li>
+            <li><span class="feat-check">✓</span> 20 قازان كهربائي</li>
+            <li><span class="feat-check">✓</span> إضاءة LED متكاملة</li>
+            <li><span class="feat-check">✓</span> لوحة قواطع رئيسية متكاملة</li>
+            <li><span class="feat-check">✓</span> تأريض + حماية</li>
+          </ul>
+
+          <!-- التشطيبات -->
+          <div class="pkg-section-title">🎨 تشطيبات محسّنة</div>
+          <ul class="pkg-features">
+            <li><span class="feat-check">✓</span> كل ما في الاقتصادية +</li>
+            <li><span class="feat-check">✓</span> خشب سويد سد كامل</li>
+            <li><span class="feat-check">✓</span> صيني برنس (مغاسل فاخرة)</li>
+            <li><span class="feat-check">✓</span> ضغط عالي 23 — 16 للجدران (ماجيك)</li>
+            <li><span class="feat-check">✓</span> سواد داخلي وخارجي</li>
+            <li class="feat-disabled"><span class="feat-x">✗</span> واجهة ألمنيوم فاخرة</li>
+          </ul>
+
+          <button class="btn btn-primary pkg-btn" onclick="openOrder('الباقة المتوسطة', '120$')">اطلب هذه الباقة</button>
+          <button class="btn btn-outline pkg-btn" onclick="openPackageBuilder('pkg_120')" style="background:transparent;border:2px solid #fff;color:#fff;margin-top:8px;width:100%;padding:10px;border-radius:8px;font-family:Cairo,sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='transparent'">🔧 خصّص الباقة</button>
+        </div>
+
+        <!-- ══════════════════════════════════
+             باقة 3 — الفاخرة
+        ══════════════════════════════════ -->
+        <div class="package-card card">
+          <div class="pkg-header pkg-premium">
+            <div class="pkg-icon">👑</div>
+            <h3 class="pkg-name">الباقة الفاخرة</h3>
+            <p class="pkg-desc">للفلل والمشاريع الكبيرة</p>
+          </div>
+          <div class="pkg-price">
+            <span class="price-old">250 $</span>
+            <span class="price-new">200 $</span>
+            <span class="price-note">خصم 20%</span>
+          </div>
+
+          <!-- السباكة -->
+          <div class="pkg-section-title">💧 سباكة فاخرة كاملة</div>
+          <ul class="pkg-features">
+            <li><span class="feat-check">✓</span> كل ما في الباقات السابقة +</li>
+            <li><span class="feat-check">✓</span> PPR بارد 25mm — ساخن 32mm (السعد)</li>
+            <li><span class="feat-check">✓</span> زنوبيا دعسة فاخرة</li>
+            <li><span class="feat-check">✓</span> خلاطات ومغاسل برنس فاخرة</li>
+            <li><span class="feat-check">✓</span> نظام مياه مالحة وحلوة مستقل</li>
+            <li><span class="feat-check">✓</span> خزان علوي وسفلي + دينمو</li>
+            <li><span class="feat-check">✓</span> قصبة وليلك وتيب فاخر</li>
+          </ul>
+
+          <!-- الكهرباء -->
+          <div class="pkg-section-title">⚡ كهرباء فاخرة كاملة</div>
+          <ul class="pkg-features">
+            <li><span class="feat-check">✓</span> أسلاك لينا 6mm رئيسي كامل</li>
+            <li><span class="feat-check">✓</span> لوحة قواطع ذكية</li>
+            <li><span class="feat-check">✓</span> إنارة LED + نيولات فاخرة</li>
+            <li><span class="feat-check">✓</span> 32 مزدوج + 20 قازان</li>
+            <li><span class="feat-check">✓</span> دينمو كانديلا احتياطي</li>
+            <li><span class="feat-check">✓</span> تأريض كامل + حماية فائقة</li>
+          </ul>
+
+          <!-- التشطيبات -->
+          <div class="pkg-section-title">🎨 تشطيبات فاخرة كاملة</div>
+          <ul class="pkg-features">
+            <li><span class="feat-check">✓</span> واجهة ألمنيوم مسالكو فضي فاخر</li>
+            <li><span class="feat-check">✓</span> خشب سويد سد كامل فاخر</li>
+            <li><span class="feat-check">✓</span> غرانيت تركي 3cm كامل</li>
+            <li><span class="feat-check">✓</span> سيراميك زنوبيا 3 (50×50)</li>
+            <li><span class="feat-check">✓</span> طرش 3 أوجه + بياض داخلي/خارجي</li>
+            <li><span class="feat-check">✓</span> ماجيك ضغط عالي 23 للجدران</li>
+            <li><span class="feat-check">✓</span> صيني برنس فاخر كامل</li>
+            <li><span class="feat-check">✓</span> ضمان شامل على جميع الأعمال</li>
+          </ul>
+
+          <button class="btn btn-secondary pkg-btn" onclick="openOrder('الباقة الفاخرة', '200$')">اطلب هذه الباقة</button>
+          <button class="btn btn-outline pkg-btn" onclick="openPackageBuilder('pkg_200')" style="background:transparent;border:2px solid #1a3a5c;color:#1a3a5c;margin-top:8px;width:100%;padding:10px;border-radius:8px;font-family:Cairo,sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='#1a3a5c';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1a3a5c'">🔧 خصّص الباقة</button>
+        </div>
+
+      </div>
+
+      <!-- CUSTOM PACKAGE -->
+      <div class="custom-package card">
+        <div class="custom-icon">⚙️</div>
+        <div class="custom-content">
+          <h3>باقة مخصصة لمشروعك</h3>
+          <p>مش لاقي اللي يناسبك؟ نصمم لك باقة حسب مساحتك وميزانيتك بالضبط</p>
+        </div>
+        <button class="btn btn-primary" onclick="openOrder('باقة مخصصة', 'يحدد لاحقاً')">تواصل معنا</button>
+      </div>
+
+      <!-- BRANDS SECTION -->
+      <div class="brands-section">
+        <h3 class="brands-title">ماركات معتمدة نعمل بها</h3>
+        <div class="brands-grid">
+          <div class="brand-item">🏷️ ماركة السعد</div>
+          <div class="brand-item">🏷️ ماركة المسعود</div>
+          <div class="brand-item">🏷️ زنوبيا</div>
+          <div class="brand-item">🏷️ زاهية</div>
+          <div class="brand-item">🏷️ لينا</div>
+          <div class="brand-item">🏷️ كانديلا</div>
+          <div class="brand-item">🏷️ البهاء</div>
+          <div class="brand-item">🏷️ برنس</div>
+          <div class="brand-item">🏷️ مسالكو</div>
+          <div class="brand-item">🏷️ ماجيك</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ORDER MODAL -->
+  <div class="modal-overlay" id="orderModal" onclick="closeModal(event)">
+    <div class="modal-box card" id="orderBox">
+      <button class="modal-close" onclick="closeOrder()">✕</button>
+      <h2 class="modal-title">🏗️ طلب الباقة</h2>
+      <p class="modal-subtitle" id="modalSubtitle">يرجى تعبئة البيانات التالية</p>
+
+      <form id="orderForm" onsubmit="submitOrder(event)">
+        <div class="form-group">
+          <label>الاسم الكامل *</label>
+          <input type="text" class="input" placeholder="محمد أحمد" required>
+        </div>
+        <div class="form-group">
+          <label>رقم الجوال *</label>
+          <input type="tel" class="input" placeholder="09XXXXXXXX" required>
+        </div>
+        <div class="form-group">
+          <label>نوع المشروع *</label>
+          <select class="input" required>
+            <option value="">اختر نوع المشروع</option>
+            <option>غرفة واحدة</option>
+            <option>شقة</option>
+            <option>منزل</option>
+            <option>فيلا</option>
+            <option>مشروع تجاري</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>الباقة المختارة</label>
+          <input type="text" class="input" id="selectedPackage" readonly>
+        </div>
+        <div class="form-group">
+          <label>تفاصيل إضافية</label>
+          <textarea class="input" rows="3" placeholder="المساحة، الموقع، أي ملاحظات..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg" style="width:100%">إرسال الطلب 🚀</button>
+      </form>
+
+      <div class="order-success" id="orderSuccess" style="display:none">
+        <div class="success-icon">✅</div>
+        <h3>تم إرسال طلبك!</h3>
+        <p>سيتواصل معك فريقنا على الرقم المدخل قريباً.</p>
+        <a href="tel:0986555105" class="btn btn-primary">أو اتصل بنا: 0986555105</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="order-form"></div>
+
+  <!-- ══════════════════════════════════════════
+       الباقات الجديدة مع نظام تبديل البنود
+  ══════════════════════════════════════════ -->
+  <section class="new-packages-section">
+    <div class="section-tag" data-aos="fade-up">باقات متكاملة</div>
+    <h2 class="section-title" data-aos="fade-up" data-aos-delay="100">باقاتنا الشاملة — خصّص باقتك</h2>
+    <p class="section-desc" data-aos="fade-up" data-aos-delay="150">اضغط "خصّص الباقة" لتبديل أي بند بآخر مع احتساب فرق السعر تلقائياً</p>
+
+    <div class="new-pkg-grid">
+
+      <!-- باقة 110 -->
+      <div class="new-pkg-card" data-aos="fade-up" data-aos-delay="100">
+        <div class="new-pkg-header h-110">
+          <div class="new-pkg-icon">💳</div>
+          <div class="new-pkg-name">باقة التقسيط الدرجة الأولى</div>
+          <div class="new-pkg-desc">للميزانيات المحدودة بجودة مضمونة</div>
+        </div>
+        <div class="new-pkg-price-row">
+          <span class="new-pkg-price">110</span>
+          <span class="new-pkg-unit">$ / م²</span>
+        </div>
+        <ul class="new-pkg-highlights">
+          <li>PPR السعد بارد 25mm / ساخن 32mm</li>
+          <li>أسلاك لينا — قواطع 16+32+20</li>
+          <li>سيراميك زنوبيا 50×50 أرضيات</li>
+          <li>أبواب فرنسي سويد + ألمنيوم مسالكو</li>
+          <li>3 معجونة دهان داخلي/خارجي</li>
+        </ul>
+        <div class="new-pkg-footer">
+          <button class="btn-build-pkg" onclick="openPackageBuilder('pkg_110')">🔧 خصّص الباقة</button>
+          <a class="btn-order-pkg" href="https://wa.me/00963986555105?text=${encodeURIComponent('مرحباً، أريد الاستفسار عن باقة التقسيط الدرجة الأولى 110$')}" target="_blank">💬 اطلب عبر واتساب</a>
+        </div>
+      </div>
+
+      <!-- باقة 85 -->
+      <div class="new-pkg-card" data-aos="fade-up" data-aos-delay="150">
+        <div class="new-pkg-header h-85">
+          <div class="new-pkg-icon">🏠</div>
+          <div class="new-pkg-name">باقة التقسيط الدرجة الثانية</div>
+          <div class="new-pkg-desc">للشقق الاقتصادية بمواصفات جيدة</div>
+        </div>
+        <div class="new-pkg-price-row">
+          <span class="new-pkg-price">85</span>
+          <span class="new-pkg-unit">$ / م²</span>
+        </div>
+        <ul class="new-pkg-highlights">
+          <li>PPR السعد 20 بار — 10 برميل المسعود</li>
+          <li>أسلاك لينا — مفاتيح برايز</li>
+          <li>بلاط حسواني 30×30 / زنوبيا 50×50</li>
+          <li>أبواب خشب سويد + ألمنيوم مسالكو</li>
+          <li>3 أوجه طرش دهان</li>
+        </ul>
+        <div class="new-pkg-footer">
+          <button class="btn-build-pkg" onclick="openPackageBuilder('pkg_85')">🔧 خصّص الباقة</button>
+          <a class="btn-order-pkg" href="https://wa.me/00963986555105?text=${encodeURIComponent('مرحباً، أريد الاستفسار عن باقة التقسيط الدرجة الثانية 85$')}" target="_blank">💬 اطلب عبر واتساب</a>
+        </div>
+      </div>
+
+      <!-- باقة 180 -->
+      <div class="new-pkg-card" data-aos="fade-up" data-aos-delay="200">
+        <div class="new-pkg-badge">الأكثر طلباً ⭐</div>
+        <div class="new-pkg-header h-180">
+          <div class="new-pkg-icon">⭐</div>
+          <div class="new-pkg-name">الباقة الممتازة</div>
+          <div class="new-pkg-desc">للشقق والمنازل المتوسطة</div>
+        </div>
+        <div class="new-pkg-price-row">
+          <span class="new-pkg-price">180</span>
+          <span class="new-pkg-unit">$ / م²</span>
+        </div>
+        <ul class="new-pkg-highlights">
+          <li>PPR كالدا — برميل 3 طبقات حديد</li>
+          <li>VIMAR — كوري — تكييف صالون 2طن</li>
+          <li>سعودي (60×120) جدران — (60×60) أرضية</li>
+          <li>سويد ملبس قشر سنديان — مدار أسود</li>
+          <li>طاقة شمسية 4 ألواح + بطارية 200A</li>
+        </ul>
+        <div class="new-pkg-footer">
+          <button class="btn-build-pkg" onclick="openPackageBuilder('pkg_180')">🔧 خصّص الباقة</button>
+          <a class="btn-order-pkg" href="https://wa.me/00963986555105?text=${encodeURIComponent('مرحباً، أريد الاستفسار عن الباقة الممتازة 180$')}" target="_blank">💬 اطلب عبر واتساب</a>
+        </div>
+      </div>
+
+      <!-- باقة 300 -->
+      <div class="new-pkg-card" data-aos="fade-up" data-aos-delay="250">
+        <div class="new-pkg-badge" style="background:#7c3aed;">VIP 👑</div>
+        <div class="new-pkg-header h-300">
+          <div class="new-pkg-icon">👑</div>
+          <div class="new-pkg-name">الباقة السوبر فاخرة</div>
+          <div class="new-pkg-desc">للفلل والمشاريع الكبيرة</div>
+        </div>
+        <div class="new-pkg-price-row">
+          <span class="new-pkg-price">300</span>
+          <span class="new-pkg-unit">$ / م²</span>
+        </div>
+        <ul class="new-pkg-highlights">
+          <li>كالدا — غندور 10×2 — حنفية كولار</li>
+          <li>8 ألواح طاقة شمسية + بطارية 300A</li>
+          <li>هندي (120×60) أرضية — سعودي (120×60) جدران</li>
+          <li>كومبوزيت — مدار خشبي — زجاج مزدوج</li>
+          <li>تدفئة أرضية + تكييف انفرتر + ديكور كامل</li>
+        </ul>
+        <div class="new-pkg-footer">
+          <button class="btn-build-pkg" onclick="openPackageBuilder('pkg_300')">🔧 خصّص الباقة</button>
+          <a class="btn-order-pkg" href="https://wa.me/00963986555105?text=${encodeURIComponent('مرحباً، أريد الاستفسار عن الباقة السوبر فاخرة 300$')}" target="_blank">💬 اطلب عبر واتساب</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       Package Builder Modal
+  ══════════════════════════════════════════ -->
+  <div class="pb-modal-overlay" id="packageBuilderModal">
+    <div class="pb-modal">
+      <div class="pb-header">
+        <div class="pb-header-info">
+          <h2 id="pbTitle">تخصيص الباقة</h2>
+          <p>بدّل أي بند بآخر — السعر يتحدث تلقائياً</p>
+        </div>
+        <button class="pb-close-btn" onclick="closePackageBuilder()">✕</button>
+        <div class="pb-price-box">
+          <div class="pb-price-label">السعر الإجمالي</div>
+          <div class="pb-base-price" id="pbBasePrice">—</div>
+          <div class="pb-total-price" id="pbTotalPrice">—</div>
+          <div class="pb-delta" id="pbDelta"></div>
+        </div>
+      </div>
+
+      <div class="pb-body">
+        <div id="pbSections"></div>
+      </div>
+
+      <div class="pb-footer">
+        <div class="pb-footer-price">
+          <div class="pb-footer-label">الإجمالي بعد التعديلات</div>
+          <div class="pb-footer-total" id="pbFooterTotal">—</div>
+        </div>
+        <button class="btn-pb-wa" onclick="sendPackageToWhatsapp()">
+          💬 أرسل المقايسة عبر واتساب
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <img src="logo.svg" style="width:48px;height:48px;border-radius:50%;" alt="لوغو الهندسية التقدمية"/>
+        <div>
+          <div class="logo-main">الهندسية التقدمية</div>
+          <div class="logo-sub">📞 0986555105</div>
+        </div>
+      </div>
+      <div class="footer-links">
+        <a href="index.html">الرئيسية</a>
+        <a href="sections.html">الأقسام</a>
+        <a href="packages.html">الباقات</a>
+        <a href="contact.html">تواصل معنا</a>
+      </div>
+      <div class="footer-copy">© 2025 الهندسية التقدمية — جميع الحقوق محفوظة</div>
+    </div>
+  </footer>
+
+  <script src="js/theme.js"></script>
+  <script>
+    function toggleMobileMenu(){document.getElementById('mobileMenu').classList.toggle('open')}
+    function openOrder(pkg, price) {
+      document.getElementById('selectedPackage').value = pkg + ' — ' + price;
+      document.getElementById('modalSubtitle').textContent = pkg + ' — ' + price;
+      document.getElementById('orderModal').classList.add('active');
+      document.getElementById('orderSuccess').style.display = 'none';
+      document.getElementById('orderForm').style.display = 'block';
+    }
+    function closeOrder() { document.getElementById('orderModal').classList.remove('active'); }
+    function closeModal(e) { if (e.target === document.getElementById('orderModal')) closeOrder(); }
+    function submitOrder(e) {
+      e.preventDefault();
+      document.getElementById('orderForm').style.display = 'none';
+      document.getElementById('orderSuccess').style.display = 'block';
+    }
+  </script>
+<a href="https://wa.me/00963986555105" target="_blank" style="position:fixed;bottom:24px;left:24px;z-index:9999;background:#25d366;color:#fff;border-radius:50%;width:58px;height:58px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;box-shadow:0 4px 16px rgba(0,0,0,0.25);text-decoration:none;" title="تواصل عبر واتساب">💬</a>
+
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+  <script src="js/packages-data.js"></script>
+  <script src="js/packages-builder.js"></script>
+  <script src="js/enhancements.js"></script>
+</body>
+</html>
