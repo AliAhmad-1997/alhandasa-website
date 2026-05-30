@@ -374,6 +374,8 @@ function openInvoiceModal(data) {
       .ci-btn-print:hover  { background:#0284c7; }
       .ci-btn-img    { background:#7c3aed; color:#fff; }
       .ci-btn-img:hover    { background:#6d28d9; }
+      .ci-btn-pdf    { background:#dc2626; color:#fff; }
+      .ci-btn-pdf:hover    { background:#b91c1c; }
       .ci-btn-img.loading  { opacity:.7; pointer-events:none; }
 
       /* ── ورقة الفاتورة (المنطقة اللي تُصوَّر) ── */
@@ -488,6 +490,7 @@ function openInvoiceModal(data) {
         <button class="ci-btn ci-btn-close" onclick="closeInvoiceModal()">✕ إغلاق</button>
         <button class="ci-btn ci-btn-print" onclick="printInvoice()">🖨️ طباعة</button>
         <button class="ci-btn ci-btn-img" id="ciBtnImg" onclick="downloadInvoiceImage()">📥 تحميل كصورة</button>
+        <button class="ci-btn ci-btn-pdf" id="ciBtnPdf" onclick="downloadInvoicePDF()">📄 تحميل PDF</button>
       </div>
 
       <!-- ورقة الفاتورة -->
@@ -708,5 +711,67 @@ window.onload = function() {
 
   if (!tab) {
     alert('يرجى السماح بالـ popups للموقع ثم اضغط مرة ثانية.');
+  }
+}
+
+/* ── تحميل PDF ── */
+function downloadInvoicePDF() {
+  const paper = document.getElementById('ciPaper');
+  if (!paper) return;
+
+  /* نجمع كل CSS */
+  let cssText = '';
+  for (const sheet of document.styleSheets) {
+    try {
+      for (const rule of sheet.cssRules) {
+        cssText += rule.cssText + '\n';
+      }
+    } catch(e) {}
+  }
+
+  const paperHTML = paper.outerHTML;
+  const html = `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>مقايسة — الهندسية التقدمية</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Cairo, Arial, sans-serif; direction: rtl; background: #fff; padding: 20px; }
+.no-print { display: none !important; }
+@page { size: A4; margin: 15mm; }
+@media print {
+  body { padding: 0; }
+  .no-print { display: none !important; }
+}
+${cssText}
+</style>
+</head>
+<body>
+<div style="text-align:center; margin-bottom:20px;" class="no-print">
+  <button onclick="window.print()" style="padding:12px 32px;background:#dc2626;color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;font-family:Cairo,Arial,sans-serif;">
+    🖨️ اضغط هنا لحفظ PDF
+  </button>
+  <p style="margin-top:10px;color:#666;font-size:.85rem;font-family:Cairo,Arial,sans-serif;">
+    في نافذة الطباعة: اختر "حفظ كـ PDF" أو "Save as PDF"
+  </p>
+</div>
+${paperHTML}
+<script>
+  // طباعة تلقائية بعد ثانية
+  window.onload = function() {
+    setTimeout(function() { window.print(); }, 800);
+  };
+<\/script>
+</body>
+</html>`;
+
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const tab  = window.open(url, '_blank');
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+
+  if (!tab) {
+    alert('يرجى السماح بالـ Popups للموقع ثم اضغط مرة ثانية.');
   }
 }
