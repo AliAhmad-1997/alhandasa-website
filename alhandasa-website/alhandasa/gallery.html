@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>معرض الصور والأعمال — الهندسية التقدمية</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css"/>
+  <link rel="stylesheet" href="css/enhancements.css">
+  <link rel="stylesheet" href="css/custom.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#c0392b">
+  <script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js")}</script>
+<style>
+.nav-download{background:#c0392b!important;color:#fff!important;padding:6px 14px!important;border-radius:20px!important;font-weight:700!important;}
+
+/* ══ معرض الأعمال ══ */
+.gallery-section { padding: 60px 0 80px; }
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 28px;
+  margin-top: 40px;
+}
+.gallery-card {
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 6px 30px rgba(0,0,0,0.12);
+  background: var(--card-bg, #fff);
+  transition: transform .25s, box-shadow .25s;
+}
+.gallery-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+}
+.ba-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  cursor: col-resize;
+  user-select: none;
+}
+.ba-img-after {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.ba-overlay {
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 50%;
+  overflow: hidden;
+}
+.ba-img-before {
+  position: absolute;
+  top: 0; right: 0;
+  width: 800px;
+  height: 100%;
+  object-fit: cover;
+}
+.ba-line {
+  position: absolute;
+  top: 0; bottom: 0;
+  right: 50%;
+  width: 3px;
+  background: #fff;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  cursor: col-resize;
+  z-index: 5;
+}
+.ba-line::after {
+  content: '⟺';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  color: #1a3a5c;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  line-height: 36px; text-align: center;
+}
+.ba-tag {
+  position: absolute;
+  bottom: 12px;
+  z-index: 6;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: .72rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-family: Cairo, sans-serif;
+  backdrop-filter: blur(4px);
+}
+.ba-tag-b { right: 12px; }
+.ba-tag-a { left: 12px; }
+
+.gallery-card-info {
+  padding: 16px 18px 18px;
+}
+.gallery-card-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-primary, #1a3a5c);
+  margin: 0 0 5px;
+}
+.gallery-card-desc {
+  font-size: .8rem;
+  color: #888;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* CTA */
+.gallery-cta {
+  text-align: center;
+  margin-top: 56px;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #1a3a5c 0%, #c0392b 100%);
+  border-radius: 20px;
+  color: #fff;
+}
+.gallery-cta h3 { font-size: 1.4rem; font-weight: 900; margin: 0 0 10px; }
+.gallery-cta p  { font-size: .9rem; opacity: .85; margin: 0 0 20px; }
+.gallery-cta-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.btn-cta-wa {
+  background: #25d366; color: #fff;
+  padding: 12px 28px; border-radius: 12px;
+  font-family: Cairo, sans-serif; font-size: .95rem; font-weight: 800;
+  text-decoration: none; transition: opacity .2s;
+}
+.btn-cta-wa:hover { opacity: .9; }
+.btn-cta-pkg {
+  background: rgba(255,255,255,0.15); color: #fff;
+  border: 2px solid rgba(255,255,255,0.5);
+  padding: 12px 28px; border-radius: 12px;
+  font-family: Cairo, sans-serif; font-size: .95rem; font-weight: 800;
+  text-decoration: none; transition: background .2s;
+}
+.btn-cta-pkg:hover { background: rgba(255,255,255,0.25); }
+
+@media(max-width:600px) {
+  .gallery-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <img src="logo.svg" style="width:48px;height:48px;border-radius:50%;" alt="لوغو الهندسية التقدمية"/>
+        <div class="logo-text">
+          <span class="logo-main">الهندسية التقدمية</span>
+          <span class="logo-sub">سباكة • كهرباء • تشطيبات</span>
+        </div>
+      </div>
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">الرئيسية</a></li>
+        <li><a href="sections.html" class="nav-link">الأقسام</a></li>
+        <li><a href="packages.html" class="nav-link">الباقات والعروض</a></li>
+        <li><a href="gallery.html" class="nav-link active">معرض الأعمال</a></li>
+        <li><a href="shop.html" class="nav-link">&#1575;&#1604;&#1605;&#1578;&#1580;&#1585; &#1575;&#1604;&#1575;&#1582;&#1578;&#1610;&#1575;&#1585;&#1610;</a></li>
+        <li><a href="about.html" class="nav-link">من نحن</a></li>
+        <li><a href="contact.html" class="nav-link">تواصل معنا</a></li>
+        <li><a href="download.html" class="nav-link nav-download">📲 حمّل التطبيق</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="theme-toggle" title="تبديل الوضع">
+          <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <a href="#order-form" class="btn btn-primary">اطلب الآن</a>
+      </div>
+      <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="index.html" class="mobile-link">الرئيسية</a>
+      <a href="sections.html" class="mobile-link">الأقسام</a>
+      <a href="packages.html" class="mobile-link">الباقات والعروض</a>
+      <a href="gallery.html" class="mobile-link">معرض الأعمال</a>
+      <a href="shop.html" class="mobile-link">&#1575;&#1604;&#1605;&#1578;&#1580;&#1585; &#1575;&#1604;&#1575;&#1582;&#1578;&#1610;&#1575;&#1585;&#1610;</a>
+      <a href="about.html" class="mobile-link">من نحن</a>
+      <a href="contact.html" class="mobile-link">تواصل معنا</a>
+      <a href="download.html" class="mobile-link" style="color:#c0392b;font-weight:700;">📲 حمّل التطبيق</a>
+    </div>
+  </nav>
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="section-container">
+      <div class="section-tag">أعمالنا</div>
+      <h1 class="page-title">معرض الصور والأعمال</h1>
+      <p class="page-desc">شاهد تحولات حقيقية من الهيكل الخام إلى التشطيب الاحترافي — اسحب على كل صورة لترى الفرق</p>
+    </div>
+  </div>
+
+  <!-- المعرض -->
+  <section class="gallery-section">
+    <div class="section-container">
+      <div class="gallery-grid">
+        <div class="gallery-card" data-aos="fade-up" data-aos-delay="80">
+          <div class="ba-wrap">
+            <img class="ba-img-after"  src="gallery/after_01.jpg"  alt="بعد — حمام"/>
+            <div class="ba-overlay"><img class="ba-img-before" src="gallery/before_01.jpg" alt="قبل — حمام"/></div>
+            <div class="ba-line"></div>
+            <div class="ba-tag ba-tag-b">قبل 🏚️</div>
+            <div class="ba-tag ba-tag-a">بعد ✨</div>
+          </div>
+          <div class="gallery-card-info">
+            <h3 class="gallery-card-title">حمام</h3>
+            <p class="gallery-card-desc">تحويل حمام قديم إلى حمام فاخر بسيراميك وتجهيزات حديثة</p>
+          </div>
+        </div>
+        <div class="gallery-card" data-aos="fade-up" data-aos-delay="160">
+          <div class="ba-wrap">
+            <img class="ba-img-after"  src="gallery/after_02.jpg"  alt="بعد — مطبخ"/>
+            <div class="ba-overlay"><img class="ba-img-before" src="gallery/before_02.jpg" alt="قبل — مطبخ"/></div>
+            <div class="ba-line"></div>
+            <div class="ba-tag ba-tag-b">قبل 🏚️</div>
+            <div class="ba-tag ba-tag-a">بعد ✨</div>
+          </div>
+          <div class="gallery-card-info">
+            <h3 class="gallery-card-title">مطبخ</h3>
+            <p class="gallery-card-desc">مطبخ قديم تحوّل لمطبخ عصري بخزائن هاي غلوس</p>
+          </div>
+        </div>
+        <div class="gallery-card" data-aos="fade-up" data-aos-delay="240">
+          <div class="ba-wrap">
+            <img class="ba-img-after"  src="gallery/after_03.jpg"  alt="بعد — صالون"/>
+            <div class="ba-overlay"><img class="ba-img-before" src="gallery/before_03.jpg" alt="قبل — صالون"/></div>
+            <div class="ba-line"></div>
+            <div class="ba-tag ba-tag-b">قبل 🏚️</div>
+            <div class="ba-tag ba-tag-a">بعد ✨</div>
+          </div>
+          <div class="gallery-card-info">
+            <h3 class="gallery-card-title">صالون</h3>
+            <p class="gallery-card-desc">صالون فارغ أصبح مجلساً فاخراً بتشطيب كامل</p>
+          </div>
+        </div>
+        <div class="gallery-card" data-aos="fade-up" data-aos-delay="320">
+          <div class="ba-wrap">
+            <img class="ba-img-after"  src="gallery/after_04.jpg"  alt="بعد — غرفة نوم"/>
+            <div class="ba-overlay"><img class="ba-img-before" src="gallery/before_04.jpg" alt="قبل — غرفة نوم"/></div>
+            <div class="ba-line"></div>
+            <div class="ba-tag ba-tag-b">قبل 🏚️</div>
+            <div class="ba-tag ba-tag-a">بعد ✨</div>
+          </div>
+          <div class="gallery-card-info">
+            <h3 class="gallery-card-title">غرفة نوم</h3>
+            <p class="gallery-card-desc">غرفة نوم بسيطة تحوّلت لغرفة أنيقة بدهان وإضاءة</p>
+          </div>
+        </div>
+        <div class="gallery-card" data-aos="fade-up" data-aos-delay="400">
+          <div class="ba-wrap">
+            <img class="ba-img-after"  src="gallery/after_05.jpg"  alt="بعد — واجهة خارجية"/>
+            <div class="ba-overlay"><img class="ba-img-before" src="gallery/before_05.jpg" alt="قبل — واجهة خارجية"/></div>
+            <div class="ba-line"></div>
+            <div class="ba-tag ba-tag-b">قبل 🏚️</div>
+            <div class="ba-tag ba-tag-a">بعد ✨</div>
+          </div>
+          <div class="gallery-card-info">
+            <h3 class="gallery-card-title">واجهة خارجية</h3>
+            <p class="gallery-card-desc">واجهة خام تحوّلت لواجهة ألمنيوم فاخرة</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="gallery-cta" data-aos="fade-up">
+        <h3>🏗️ مشروعك القادم يستحق نفس الاهتمام</h3>
+        <p>تواصل معنا اليوم واحصل على استشارة مجانية لمشروعك</p>
+        <div class="gallery-cta-btns">
+          <a href="https://wa.me/00963986555105" target="_blank" class="btn-cta-wa">💬 تواصل عبر واتساب</a>
+          <a href="packages.html" class="btn-cta-pkg">📦 شوف الباقات</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+<footer class="footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <img src="logo.svg" style="width:48px;height:48px;border-radius:50%;" alt="لوغو الهندسية التقدمية"/>
+        <div>
+          <div class="logo-main">الهندسية التقدمية</div>
+          <div class="logo-sub">📞 0986555105</div>
+        </div>
+      </div>
+      <div class="footer-links">
+        <a href="index.html">الرئيسية</a>
+        <a href="sections.html">الأقسام</a>
+        <a href="packages.html">الباقات</a>
+        <a href="contact.html">تواصل معنا</a>
+      </div>
+      <div class="footer-copy">© 2025 الهندسية التقدمية — جميع الحقوق محفوظة</div>
+    </div>
+  </footer>
+
+  <script src="js/theme.js"></script>
+  <script>function toggleMobileMenu(){document.getElementById('mobileMenu').classList.toggle('open')}</script>
+  <a href="https://wa.me/00963986555105" target="_blank" style="position:fixed;bottom:24px;left:24px;z-index:9999;background:#25d366;color:#fff;border-radius:50%;width:58px;height:58px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;box-shadow:0 4px 16px rgba(0,0,0,0.25);text-decoration:none;">💬</a>
+
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+  <script src="js/enhancements.js"></script>
+</body>
+</html>
