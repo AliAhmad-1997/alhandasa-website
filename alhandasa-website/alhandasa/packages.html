@@ -256,6 +256,106 @@
 }
 .btn-wa.show { display: block; }
 .btn-wa:hover { opacity: .9; }
+
+/* ══ معرض قبل/بعد ══ */
+.gallery-section { padding: 60px 0; }
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 36px;
+}
+.gallery-card {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  background: #111;
+  position: relative;
+}
+.gallery-label {
+  position: absolute;
+  top: 0; right: 0; left: 0;
+  z-index: 10;
+  background: linear-gradient(180deg, rgba(0,0,0,0.65) 0%, transparent 100%);
+  color: #fff;
+  font-size: .85rem;
+  font-weight: 800;
+  padding: 12px 14px 24px;
+  font-family: Cairo, sans-serif;
+}
+/* ba-wrap: الـ slider */
+.ba-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/10;
+  overflow: hidden;
+  cursor: col-resize;
+  user-select: none;
+}
+.ba-img-after {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.ba-overlay {
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 50%;
+  overflow: hidden;
+  transition: none;
+}
+.ba-img-before {
+  position: absolute;
+  top: 0; right: 0;
+  width: 100vw; max-width: 800px;
+  height: 100%;
+  object-fit: cover;
+}
+.ba-line {
+  position: absolute;
+  top: 0; bottom: 0;
+  right: 50%;
+  width: 3px;
+  background: #fff;
+  box-shadow: 0 0 8px rgba(0,0,0,0.5);
+  cursor: col-resize;
+  z-index: 5;
+}
+.ba-line::after {
+  content: '⟺';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  color: #333;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  line-height: 34px;
+  text-align: center;
+}
+.ba-tag {
+  position: absolute;
+  bottom: 12px;
+  z-index: 6;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  font-size: .72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-family: Cairo, sans-serif;
+  backdrop-filter: blur(4px);
+}
+.ba-tag-b { right: 12px; }
+.ba-tag-a { left: 12px; }
+@media(max-width:600px){
+  .gallery-grid { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
@@ -273,6 +373,7 @@
         <li><a href="index.html" class="nav-link">الرئيسية</a></li>
         <li><a href="sections.html" class="nav-link">الأقسام</a></li>
         <li><a href="packages.html" class="nav-link active">الباقات والعروض</a></li>
+        <li><a href="gallery.html" class="nav-link">معرض الأعمال</a></li>
         <li><a href="shop.html" class="nav-link">&#1575;&#1604;&#1605;&#1578;&#1580;&#1585; &#1575;&#1604;&#1575;&#1582;&#1578;&#1610;&#1575;&#1585;&#1610;</a></li>
         <li><a href="about.html" class="nav-link">من نحن</a></li>
         <li><a href="contact.html" class="nav-link">تواصل معنا</a></li>
@@ -291,6 +392,7 @@
       <a href="index.html" class="mobile-link">الرئيسية</a>
       <a href="sections.html" class="mobile-link">الأقسام</a>
       <a href="packages.html" class="mobile-link">الباقات والعروض</a>
+      <a href="gallery.html" class="mobile-link">معرض الأعمال</a>
       <a href="shop.html" class="mobile-link">&#1575;&#1604;&#1605;&#1578;&#1580;&#1585; &#1575;&#1604;&#1575;&#1582;&#1578;&#1610;&#1575;&#1585;&#1610;</a>
       <a href="about.html" class="mobile-link">من نحن</a>
       <a href="contact.html" class="mobile-link">تواصل معنا</a>
@@ -318,29 +420,6 @@
     </div>
   </div>
 
-
-  <!-- ══════════════════════════════════════════
-       قسم قبل وبعد
-  ══════════════════════════════════════════ -->
-  <section class="ba-section">
-    <div class="section-tag" data-aos="fade-up">أعمالنا</div>
-    <h2 class="section-title" data-aos="fade-up" data-aos-delay="100">شاهد الفرق بنفسك</h2>
-    <p class="section-desc" data-aos="fade-up" data-aos-delay="150">اسحب الخط لترى التحول الكامل — من الهيكل الخام إلى التشطيب الاحترافي</p>
-
-    <div class="ba-slider-wrap" data-aos="zoom-in" data-aos-delay="200">
-      <!-- صورة بعد (الخلفية) -->
-      <img src="luxury-interior.png" alt="بعد التشطيب"/>
-      <!-- صورة قبل (فوقها) -->
-      <div class="ba-before">
-        <img src="before-after.png" alt="قبل التشطيب"/>
-      </div>
-      <!-- خط السحب -->
-      <div class="ba-handle"></div>
-      <!-- تسميات -->
-      <div class="ba-label ba-label-before">قبل 🏚️</div>
-      <div class="ba-label ba-label-after">بعد ✨</div>
-    </div>
-  </section>
 
   <!-- ══════════════════════════════════════════
        حاسبة التكاليف
