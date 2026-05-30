@@ -13,7 +13,250 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#c0392b">
   <script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js")}</script>
-<style>.nav-download{background:#c0392b!important;color:#fff!important;padding:6px 14px!important;border-radius:20px!important;font-weight:700!important;}</style>
+<style>
+.nav-download{background:#c0392b!important;color:#fff!important;padding:6px 14px!important;border-radius:20px!important;font-weight:700!important;}
+
+/* ══ حاسبة التكاليف — تصميم جديد ══ */
+.calc-box {
+  max-width: 700px;
+  margin: 0 auto;
+  background: var(--card-bg, #fff);
+  border-radius: 20px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.10);
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.07);
+}
+
+/* رأس الحاسبة */
+.calc-header {
+  background: linear-gradient(135deg, #1a3a5c 0%, #c0392b 100%);
+  padding: 24px 28px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.calc-header-icon { font-size: 2rem; }
+.calc-header-text h3 {
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin: 0 0 2px;
+}
+.calc-header-text p { color: rgba(255,255,255,0.75); font-size: .82rem; margin: 0; }
+
+/* جسم الحاسبة */
+.calc-body { padding: 24px 28px; display: flex; flex-direction: column; gap: 18px; }
+
+/* صفوف المدخلات */
+.calc-row { display: flex; flex-direction: column; gap: 6px; }
+.calc-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media(max-width:560px){ .calc-row-2 { grid-template-columns: 1fr; } }
+
+.calc-label {
+  font-size: .8rem;
+  font-weight: 700;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.calc-label-icon { font-size: 1rem; }
+
+.calc-input, .calc-select {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  font-family: Cairo, sans-serif;
+  font-size: .92rem;
+  font-weight: 600;
+  color: #222;
+  background: #fafafa;
+  transition: border-color .2s, box-shadow .2s;
+  outline: none;
+  box-sizing: border-box;
+}
+.calc-input:focus, .calc-select:focus {
+  border-color: #1a3a5c;
+  box-shadow: 0 0 0 3px rgba(26,58,92,0.10);
+  background: #fff;
+}
+
+/* فاصل العملة */
+.calc-currency-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 2px 0;
+}
+.calc-currency-divider::before,
+.calc-currency-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #eee;
+}
+.calc-currency-label {
+  font-size: .75rem;
+  color: #aaa;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* أزرار اختيار العملة */
+.calc-currency-btns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.calc-currency-btn {
+  flex: 1;
+  min-width: 120px;
+  padding: 10px 14px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  background: #fafafa;
+  font-family: Cairo, sans-serif;
+  font-size: .85rem;
+  font-weight: 700;
+  color: #666;
+  cursor: pointer;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.calc-currency-btn:hover { border-color: #1a3a5c; color: #1a3a5c; background: #f0f4f8; }
+.calc-currency-btn.active-usd {
+  border-color: #1a3a5c;
+  background: #1a3a5c;
+  color: #fff;
+}
+.calc-currency-btn.active-syp {
+  border-color: #c0392b;
+  background: #c0392b;
+  color: #fff;
+}
+.calc-currency-btn.active-both {
+  border-color: #7c3aed;
+  background: #7c3aed;
+  color: #fff;
+}
+
+/* حقل سعر الصرف */
+.calc-rate-row {
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+  animation: fadeIn .3s ease;
+}
+.calc-rate-row.visible { display: flex; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+.calc-rate-inner { display: flex; align-items: center; gap: 10px; }
+.calc-rate-badge {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-size: .8rem;
+  font-weight: 700;
+  white-space: nowrap;
+  display: none;
+}
+
+/* نتائج الحساب */
+.calc-result {
+  display: none;
+  flex-direction: column;
+  gap: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1.5px solid #e8e8e8;
+  animation: fadeIn .35s ease;
+}
+.calc-result.show { display: flex; }
+
+.calc-result-header {
+  background: #f8fafc;
+  padding: 12px 18px;
+  font-size: .78rem;
+  font-weight: 800;
+  color: #888;
+  border-bottom: 1px solid #eee;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.calc-result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+@media(max-width:480px){ .calc-result-grid { grid-template-columns: 1fr; } }
+
+.calc-result-item {
+  padding: 16px 18px;
+  border-bottom: 1px solid #f0f0f0;
+  border-left: 1px solid #f0f0f0;
+  transition: background .2s;
+}
+.calc-result-item:hover { background: #fafafa; }
+.calc-result-label { font-size: .72rem; font-weight: 700; color: #999; margin-bottom: 5px; text-transform: uppercase; letter-spacing: .04em; }
+.calc-result-value { font-size: 1.2rem; font-weight: 900; color: #1a3a5c; line-height: 1.2; }
+
+/* خانات الليرة */
+.calc-result-item.syp-row { background: #fffbeb; }
+.calc-result-item.syp-row .calc-result-label { color: #b45309; }
+.calc-result-item.syp-row .calc-result-value { color: #92400e; font-size: 1.05rem; }
+
+/* ملاحظة */
+.calc-note {
+  padding: 10px 18px;
+  font-size: .72rem;
+  color: #aaa;
+  background: #fafafa;
+  border-top: 1px solid #f0f0f0;
+  margin: 0;
+}
+
+/* أزرار الحاسبة */
+.calc-actions { display: flex; flex-direction: column; gap: 10px; }
+.btn-calc {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #1a3a5c, #2563a8);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-family: Cairo, sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: opacity .2s, transform .1s;
+}
+.btn-calc:hover { opacity: .92; transform: translateY(-1px); }
+.btn-calc:active { transform: translateY(0); }
+.btn-calc.customize { background: linear-gradient(135deg, #374151, #1f2937); }
+
+.btn-wa {
+  display: none;
+  width: 100%;
+  padding: 13px;
+  background: #25d366;
+  color: #fff;
+  border-radius: 12px;
+  font-family: Cairo, sans-serif;
+  font-size: .95rem;
+  font-weight: 800;
+  text-align: center;
+  text-decoration: none;
+  transition: opacity .2s;
+  box-sizing: border-box;
+}
+.btn-wa.show { display: block; }
+.btn-wa:hover { opacity: .9; }
+</style>
 </head>
 <body>
 
@@ -108,57 +351,123 @@
     <p class="section-desc" data-aos="fade-up" data-aos-delay="150">اختر الباقة وأدخل المساحة — وسنحسب لك التكلفة فوراً</p>
 
     <div class="calc-box" data-aos="fade-up" data-aos-delay="200">
-      <div class="calc-grid">
-        <div>
-          <label class="calc-label">نوع الباقة</label>
-          <select class="calc-select" id="calcType" onchange="calcCost()">
-            <option value="">اختر الباقة...</option>
-            <optgroup label="── باقات التقسيط ──">
-              <option value="taqsit2">🏠 التقسيط الدرجة الثانية — 85$/م²</option>
-              <option value="taqsit1">💳 التقسيط الدرجة الأولى — 110$/م²</option>
-            </optgroup>
-            <optgroup label="── الباقات الشاملة ──">
-              <option value="basic">🏠 الاقتصادية — 65$/م²</option>
-              <option value="standard">🏢 المتوسطة — 120$/م²</option>
-              <option value="momtaza">⭐ الممتازة — 180$/م²</option>
-              <option value="premium">👑 الفاخرة — 200$/م²</option>
-              <option value="super">💎 السوبر فاخرة — 300$/م²</option>
-            </optgroup>
-          </select>
-        </div>
-        <div>
-          <label class="calc-label">المساحة الإجمالية (م²)</label>
-          <input class="calc-input" id="calcArea" type="number" min="1" max="10000"
-                 placeholder="مثال: 120" oninput="calcCost()"/>
+
+      <!-- رأس الحاسبة -->
+      <div class="calc-header">
+        <div class="calc-header-icon">🧮</div>
+        <div class="calc-header-text">
+          <h3>حاسبة التكاليف التفاعلية</h3>
+          <p>اختر الباقة والمساحة والعملة — وسنحسب لك فوراً</p>
         </div>
       </div>
 
-      <div class="calc-result" id="calcResult">
-        <div class="calc-result-grid">
-          <div class="calc-result-item">
-            <div class="calc-result-label">التكلفة الإجمالية</div>
-            <div class="calc-result-value" id="calcTotal">—</div>
+      <!-- جسم الحاسبة -->
+      <div class="calc-body">
+
+        <!-- صف: الباقة + المساحة -->
+        <div class="calc-row-2">
+          <div class="calc-row">
+            <label class="calc-label"><span class="calc-label-icon">📦</span> نوع الباقة</label>
+            <select class="calc-select" id="calcType" onchange="calcCost()">
+              <option value="">اختر الباقة...</option>
+              <optgroup label="── باقات التقسيط ──">
+                <option value="taqsit2">🏠 التقسيط الدرجة الثانية — 85$</option>
+                <option value="taqsit1">💳 التقسيط الدرجة الأولى — 110$</option>
+              </optgroup>
+              <optgroup label="── الباقات الشاملة ──">
+                <option value="basic">🏠 الاقتصادية — 65$</option>
+                <option value="standard">🏢 المتوسطة — 120$</option>
+                <option value="momtaza">⭐ الممتازة — 180$</option>
+                <option value="premium">👑 الفاخرة — 200$</option>
+                <option value="super">💎 السوبر فاخرة — 300$</option>
+              </optgroup>
+            </select>
           </div>
-          <div class="calc-result-item">
-            <div class="calc-result-label">سعر المتر</div>
-            <div class="calc-result-value" id="calcPriceM2">—</div>
-          </div>
-          <div class="calc-result-item">
-            <div class="calc-result-label">قسط شهري / 12 شهر</div>
-            <div class="calc-result-value" id="calcMonthly12">—</div>
-          </div>
-          <div class="calc-result-item">
-            <div class="calc-result-label">قسط شهري / 24 شهر</div>
-            <div class="calc-result-value" id="calcMonthly24">—</div>
+          <div class="calc-row">
+            <label class="calc-label"><span class="calc-label-icon">📐</span> المساحة الإجمالية (م²)</label>
+            <input class="calc-input" id="calcArea" type="number" min="1" max="10000"
+                   placeholder="مثال: 120" oninput="calcCost()"/>
           </div>
         </div>
-        <p class="calc-note">* الأسعار تقديرية وتشمل المواد والعمالة — قد تختلف حسب التفاصيل</p>
-      </div>
 
-      <button class="btn-calc" onclick="calcCost()">🧮 احسب الآن</button>
-      <a class="btn-wa" id="btnWhatsapp" href="#" target="_blank">
-        💬 أرسل المقايسة للمكتب عبر واتساب
-      </a>
+        <!-- فاصل: اختيار العملة -->
+        <div class="calc-currency-divider">
+          <span class="calc-currency-label">💱 عرض النتيجة بـ</span>
+        </div>
+
+        <div class="calc-currency-btns">
+          <button class="calc-currency-btn active-usd" id="btnUSD" onclick="setCurrency('usd')">
+            💵 دولار فقط
+          </button>
+          <button class="calc-currency-btn" id="btnSYP" onclick="setCurrency('syp')">
+            🇸🇾 ليرة سورية فقط
+          </button>
+          <button class="calc-currency-btn" id="btnBOTH" onclick="setCurrency('both')">
+            💱 كلاهما معاً
+          </button>
+        </div>
+
+        <!-- حقل سعر الصرف — يظهر عند اختيار ليرة -->
+        <div class="calc-rate-row" id="calcRateRow">
+          <label class="calc-label"><span class="calc-label-icon">🇸🇾</span> سعر الصرف (ليرة / دولار)</label>
+          <div class="calc-rate-inner">
+            <input class="calc-input" id="calcRate" type="number" min="1" max="9999999"
+                   placeholder="مثال: 13000" oninput="calcCost()" style="max-width:200px;"/>
+            <span class="calc-rate-badge" id="calcRateBadge"></span>
+          </div>
+        </div>
+
+        <!-- النتائج -->
+        <div class="calc-result" id="calcResult">
+          <div class="calc-result-header">📊 نتيجة الحساب</div>
+          <div class="calc-result-grid" id="calcResultGrid">
+            <!-- دولار -->
+            <div class="calc-result-item" id="r-total-usd">
+              <div class="calc-result-label">التكلفة الإجمالية</div>
+              <div class="calc-result-value" id="calcTotal">—</div>
+            </div>
+            <div class="calc-result-item" id="r-m2-usd">
+              <div class="calc-result-label">سعر المتر</div>
+              <div class="calc-result-value" id="calcPriceM2">—</div>
+            </div>
+            <div class="calc-result-item" id="r-m12-usd">
+              <div class="calc-result-label">قسط شهري / 12 شهر</div>
+              <div class="calc-result-value" id="calcMonthly12">—</div>
+            </div>
+            <div class="calc-result-item" id="r-m24-usd">
+              <div class="calc-result-label">قسط شهري / 24 شهر</div>
+              <div class="calc-result-value" id="calcMonthly24">—</div>
+            </div>
+            <!-- ليرة سورية -->
+            <div class="calc-result-item syp-row" id="r-total-syp" style="display:none">
+              <div class="calc-result-label">🇸🇾 التكلفة بالليرة</div>
+              <div class="calc-result-value" id="calcSypTotal">—</div>
+            </div>
+            <div class="calc-result-item syp-row" id="r-m2-syp" style="display:none">
+              <div class="calc-result-label">🇸🇾 سعر المتر بالليرة</div>
+              <div class="calc-result-value" id="calcSypM2">—</div>
+            </div>
+            <div class="calc-result-item syp-row" id="r-m12-syp" style="display:none">
+              <div class="calc-result-label">🇸🇾 قسط 12 شهر بالليرة</div>
+              <div class="calc-result-value" id="calcSypMonthly12">—</div>
+            </div>
+            <div class="calc-result-item syp-row" id="r-m24-syp" style="display:none">
+              <div class="calc-result-label">🇸🇾 قسط 24 شهر بالليرة</div>
+              <div class="calc-result-value" id="calcSypMonthly24">—</div>
+            </div>
+          </div>
+          <p class="calc-note">* الأسعار تقديرية وتشمل المواد والعمالة — قد تختلف حسب التفاصيل</p>
+        </div>
+
+        <!-- أزرار -->
+        <div class="calc-actions">
+          <button class="btn-calc" onclick="calcCost()">🧮 احسب الآن</button>
+          <a class="btn-wa" id="btnWhatsapp" href="#" target="_blank">
+            💬 أرسل المقايسة للمكتب عبر واتساب
+          </a>
+        </div>
+
+      </div><!-- /calc-body -->
     </div>
   </section>
 
