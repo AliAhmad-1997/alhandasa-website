@@ -1,9 +1,6 @@
 import logging
 import os
-from telegram import (
-    Update, InlineKeyboardButton, InlineKeyboardMarkup,
-    InputMediaPhoto
-)
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application, CommandHandler, CallbackQueryHandler,
     MessageHandler, filters, ContextTypes, ConversationHandler
@@ -11,455 +8,526 @@ from telegram.ext import (
 from telegram.constants import ChatAction
 
 # ══════════════════════════════════════════════════════════════
-# ⚙️  الإعدادات — كل القيم من متغيرات البيئة فقط
+# ⚙️  الإعدادات
 # ══════════════════════════════════════════════════════════════
-TOKEN    = os.environ["BOT_TOKEN"]          # مطلوب — لا توكن = لا تشغيل
-ADMIN_ID = int(os.environ.get("ADMIN_ID", "0"))   # Chat ID للمشرف
-ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "")
+TOKEN    = os.environ["BOT_TOKEN"]
+ADMIN_ID = int(os.environ.get("ADMIN_ID", "0"))
 
-logging.basicConfig(
-    format="%(asctime)s | %(levelname)s | %(message)s",
-    level=logging.INFO
-)
+logging.basicConfig(format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# ══════════════════════════════════════════════════════════════
-# 📦  بيانات الباقات
-# ══════════════════════════════════════════════════════════════
-PACKAGES = {
-    "pkg_65": {
-        "name": "الباقة الاقتصادية", "icon": "🏠", "price": 65,
-        "desc": "مثالية للغرف والشقق الصغيرة",
-        "features": [
-            "💧 السباكة: PPR السعد، 10 برميل المسعود، سخان إيطالي 17 كيلو",
-            "⚡ الكهرباء: أسلاك لينا، مفاتيح برايز، قواطع كاملة",
-            "🎨 التشطيبات: بلاط حسواني 30×30، سيراميك زنوبيا 50×50، أبواب ألمنيوم مسالكو",
-        ],
-    },
-    "pkg_120": {
-        "name": "الباقة المتوسطة", "icon": "🏢", "price": 120,
-        "desc": "للشقق والمنازل المتوسطة — الأكثر طلباً ⭐",
-        "features": [
-            "💧 السباكة: كل الاقتصادية + PPR ساخن 32mm، خلاطات برنس",
-            "⚡ الكهرباء: كل الاقتصادية + إضاءة LED متكاملة، تأريض وحماية",
-            "🎨 التشطيبات: كل الاقتصادية + خشب سويد، صيني برنس فاخر",
-        ],
-    },
-    "pkg_200": {
-        "name": "الباقة الفاخرة", "icon": "👑", "price": 200,
-        "desc": "للفلل والمشاريع الكبيرة",
-        "features": [
-            "💧 السباكة: PPR كالدا، خلاطات ومغاسل برنس فاخرة، نظام مياه مستقل",
-            "⚡ الكهرباء: لوحة قواطع ذكية، طاقة شمسية 4 ألواح + بطارية 200A",
-            "🎨 التشطيبات: واجهة ألمنيوم فاخرة، كومبوزيت، زجاج مزدوج، ديكور كامل",
-        ],
-    },
-    "pkg_85": {
-        "name": "باقة التقسيط الدرجة الثانية", "icon": "💳", "price": 85,
-        "desc": "تقسيط مريح للشقق الصغيرة",
-        "features": [
-            "💧 PPR السعد 20 بار، 10 برميل المسعود",
-            "⚡ أسلاك لينا، مفاتيح برايز",
-            "🎨 بلاط حسواني 30×30، أبواب خشب سويد + ألمنيوم مسالكو",
-        ],
-    },
-    "pkg_180": {
-        "name": "الباقة الممتازة", "icon": "⭐", "price": 180,
-        "desc": "للشقق والمنازل المتوسطة",
-        "features": [
-            "💧 PPR كالدا، برميل 3 طبقات حديد",
-            "⚡ VIMAR كوري، تكييف صالون 2 طن، طاقة شمسية 4 ألواح",
-            "🎨 سعودي 60×120 جدران، سويد ملبس قشر سنديان",
-        ],
-    },
-    "pkg_300": {
-        "name": "الباقة السوبر فاخرة", "icon": "💎", "price": 300,
-        "desc": "للفلل والمشاريع الكبيرة VIP",
-        "features": [
-            "💧 كالدا، غندور 10×2، حنفية كولار",
-            "⚡ 8 ألواح طاقة شمسية + بطارية 300A، تدفئة أرضية",
-            "🎨 هندي 120×60 أرضية، كومبوزيت، ديكور كامل فاخر",
-        ],
-    },
-}
-
-SHOP_ITEMS = [
-    {"name": "سخان إيطالي 17 كيلو (البهاء)", "icon": "🔥"},
-    {"name": "خلاطات برنس فاخرة",             "icon": "🚿"},
-    {"name": "ألواح طاقة شمسية 400W",          "icon": "☀️"},
-    {"name": "بطارية 200A",                    "icon": "🔋"},
-    {"name": "مفاتيح VIMAR كوري",              "icon": "💡"},
-    {"name": "سيراميك زنوبيا 60×60",           "icon": "🏠"},
-    {"name": "أسلاك لينا 6mm",                 "icon": "⚡"},
-    {"name": "PPR السعد 20 بار",               "icon": "💧"},
-]
 
 WHATSAPP = "https://wa.me/00963986555105"
 WEBSITE  = "https://aliahmad-1997.github.io/Advance-Engineering-Company/"
 PHONE    = "0986555105"
+EMAIL    = "aliahmad@gmail.com"
+ADDRESS  = "حمص — شارع الأهرام، مقابل مدرسة جميل سرحان"
 
 # ══════════════════════════════════════════════════════════════
-# 🧠  FAQ — أسئلة شائعة مع ردود تلقائية
+# 📦  7 باقات كاملة
+# ══════════════════════════════════════════════════════════════
+PACKAGES = {
+    "pkg_65": {
+        "name": "الباقة الاقتصادية", "icon": "🏠", "price": 65,
+        "unit": "للغرفة الواحدة",
+        "desc": "مثالية للغرف والشقق الصغيرة",
+        "features": {
+            "💧 السباكة": [
+                "أنابيب PPR بارد 20mm — ساخن 25mm (السعد)",
+                "10 برميل أبيض/أزرق (المسعود) — كفالة 5 سنوات",
+                "سخان إيطالي 17 كيلو (البهاء)",
+                "زنوبيا + دعسة + راصور + فرنجي",
+                "حنفيات نحاس صيني (زاهية) + خلاطات + دوش",
+            ],
+            "⚡ الكهرباء": [
+                "أسلاك: 6mm رئيسي — 1.5mm مفرد — 1mm مزدوج (لينا)",
+                "مفاتيح برايز 3mm + ليد",
+                "16 مفرد لكل غرفة — 32 مزدوج رئيسي",
+                "قواطع + علب + اكسسوارات + إنارة LED",
+            ],
+            "🎨 التشطيبات": [
+                "بلاط حسواني 30×30 أرضية",
+                "سيراميك زنوبيا 50×50 حمام",
+                "أبواب ألمنيوم مسالكو",
+                "شبابيك ألمنيوم عادي",
+            ],
+        },
+    },
+    "pkg_85": {
+        "name": "التقسيط الدرجة الثانية", "icon": "💳", "price": 85,
+        "unit": "للمتر المربع",
+        "desc": "تقسيط مريح للشقق الصغيرة",
+        "features": {
+            "💧 السباكة": [
+                "PPR السعد 20 بار — برميل المسعود",
+                "سخان إيطالي + صحيات زاهية",
+            ],
+            "⚡ الكهرباء": [
+                "أسلاك لينا — مفاتيح برايز",
+                "قواطع كاملة + إنارة",
+            ],
+            "🎨 التشطيبات": [
+                "بلاط حسواني 30×30",
+                "أبواب خشب سويد + ألمنيوم مسالكو",
+            ],
+        },
+    },
+    "pkg_110": {
+        "name": "التقسيط الدرجة الأولى", "icon": "💳", "price": 110,
+        "unit": "للمتر المربع",
+        "desc": "تقسيط ممتاز للشقق المتوسطة",
+        "features": {
+            "💧 السباكة": [
+                "PPR ساخن وبارد (السعد) — برميل 3 طبقات",
+                "خلاطات برنس + سخان إيطالي",
+            ],
+            "⚡ الكهرباء": [
+                "أسلاك لينا — مفاتيح برايز مع ليد",
+                "تأريض + حماية كاملة",
+            ],
+            "🎨 التشطيبات": [
+                "سيراميك زنوبيا 60×60",
+                "خشب سويد — أبواب ألمنيوم",
+            ],
+        },
+    },
+    "pkg_120": {
+        "name": "الباقة المتوسطة", "icon": "🏢", "price": 120,
+        "unit": "للمتر المربع",
+        "desc": "للشقق والمنازل المتوسطة — الأكثر طلباً ⭐",
+        "features": {
+            "💧 السباكة": [
+                "PPR ساخن 32mm + بارد (السعد)",
+                "خلاطات برنس فاخرة + سخان إيطالي",
+                "برميل 3 طبقات حديد",
+            ],
+            "⚡ الكهرباء": [
+                "أسلاك لينا كاملة + إضاءة LED متكاملة",
+                "تأريض وحماية + قواطع احترافية",
+            ],
+            "🎨 التشطيبات": [
+                "سيراميك زنوبيا 60×60 أرضية",
+                "خشب سويد داخلي — صيني برنس فاخر",
+                "أبواب ألمنيوم مسالكو",
+            ],
+        },
+    },
+    "pkg_180": {
+        "name": "الباقة الممتازة", "icon": "⭐", "price": 180,
+        "unit": "للمتر المربع",
+        "desc": "للشقق والمنازل المتوسطة الراقية",
+        "features": {
+            "💧 السباكة": [
+                "PPR كالدا — برميل 3 طبقات حديد",
+                "خلاطات وصحيات برنس فاخرة",
+            ],
+            "⚡ الكهرباء": [
+                "مفاتيح VIMAR كوري — أسلاك لينا",
+                "تكييف صالون 2 طن",
+                "طاقة شمسية 4 ألواح 400W",
+            ],
+            "🎨 التشطيبات": [
+                "سعودي 60×120 جدران",
+                "خشب سويد ملبس قشر سنديان",
+                "واجهة ألمنيوم مطور",
+            ],
+        },
+    },
+    "pkg_200": {
+        "name": "الباقة الفاخرة", "icon": "👑", "price": 200,
+        "unit": "للمتر المربع",
+        "desc": "للفلل والمشاريع الكبيرة",
+        "features": {
+            "💧 السباكة": [
+                "PPR كالدا كامل — نظام مياه مستقل",
+                "خلاطات ومغاسل برنس فاخرة",
+                "حنفية كولار + غندور",
+            ],
+            "⚡ الكهرباء": [
+                "لوحة قواطع ذكية — VIMAR كوري",
+                "طاقة شمسية 4 ألواح + بطارية 200A",
+                "تكييف مركزي",
+            ],
+            "🎨 التشطيبات": [
+                "واجهة ألمنيوم فاخرة + كومبوزيت",
+                "زجاج مزدوج — ديكور داخلي كامل",
+                "سيراميك إيطالي 80×80",
+            ],
+        },
+    },
+    "pkg_300": {
+        "name": "الباقة السوبر فاخرة", "icon": "💎", "price": 300,
+        "unit": "للمتر المربع",
+        "desc": "للفلل والمشاريع الكبيرة VIP",
+        "features": {
+            "💧 السباكة": [
+                "PPR كالدا + غندور 10×2",
+                "حنفية كولار + نظام مياه ذكي",
+            ],
+            "⚡ الكهرباء": [
+                "8 ألواح طاقة شمسية 400W + بطارية 300A",
+                "تدفئة أرضية — لوحة ذكية كاملة",
+                "VIMAR كوري + تكييف مركزي",
+            ],
+            "🎨 التشطيبات": [
+                "هندي 120×60 أرضية فاخرة",
+                "كومبوزيت + ديكور كامل VIP",
+                "واجهة زجاج مزدوج + ألمنيوم",
+            ],
+        },
+    },
+}
+
+# ══════════════════════════════════════════════════════════════
+# 🛒  المتجر — 28 منتج بـ 6 فئات
+# ══════════════════════════════════════════════════════════════
+SHOP = {
+    "🏺 سيراميك وبلاط": [
+        {"id": "s01", "name": "بلاط حسواني 30×30",        "price": "حسب الطلب"},
+        {"id": "s02", "name": "سيراميك زنوبيا 50×50",      "price": "حسب الطلب"},
+        {"id": "s03", "name": "سيراميك زنوبيا 60×60",      "price": "حسب الطلب"},
+        {"id": "s04", "name": "سعودي 60×120",              "price": "حسب الطلب"},
+        {"id": "s05", "name": "هندي 120×60 فاخر",          "price": "حسب الطلب"},
+        {"id": "s06", "name": "سيراميك إيطالي 80×80",      "price": "حسب الطلب"},
+    ],
+    "💧 صحيات وسباكة": [
+        {"id": "s07", "name": "سخان إيطالي 17 كيلو (البهاء)", "price": "حسب الطلب"},
+        {"id": "s08", "name": "خلاطات برنس فاخرة",            "price": "حسب الطلب"},
+        {"id": "s09", "name": "PPR السعد 20 بار",             "price": "حسب الطلب"},
+        {"id": "s10", "name": "PPR كالدا",                    "price": "حسب الطلب"},
+        {"id": "s11", "name": "برميل 3 طبقات حديد",           "price": "حسب الطلب"},
+        {"id": "s12", "name": "حنفية كولار",                  "price": "حسب الطلب"},
+        {"id": "s13", "name": "مغاسل برنس فاخرة",             "price": "حسب الطلب"},
+        {"id": "s14", "name": "دوش + قصبة زاهية",             "price": "حسب الطلب"},
+    ],
+    "⚡ كهربائيات": [
+        {"id": "s15", "name": "أسلاك لينا 6mm",              "price": "حسب الطلب"},
+        {"id": "s16", "name": "مفاتيح برايز",                 "price": "حسب الطلب"},
+        {"id": "s17", "name": "مفاتيح VIMAR كوري",            "price": "حسب الطلب"},
+        {"id": "s18", "name": "ألواح طاقة شمسية 400W",        "price": "حسب الطلب"},
+        {"id": "s19", "name": "بطارية 200A",                  "price": "حسب الطلب"},
+        {"id": "s20", "name": "بطارية 300A",                  "price": "حسب الطلب"},
+        {"id": "s21", "name": "إنارة LED متكاملة",            "price": "حسب الطلب"},
+    ],
+    "🚪 أبواب وشبابيك": [
+        {"id": "s22", "name": "أبواب ألمنيوم مسالكو",         "price": "حسب الطلب"},
+        {"id": "s23", "name": "أبواب خشب سويد",               "price": "حسب الطلب"},
+        {"id": "s24", "name": "شبابيك ألمنيوم مزدوج",         "price": "حسب الطلب"},
+        {"id": "s25", "name": "واجهة كومبوزيت",               "price": "حسب الطلب"},
+    ],
+    "🎨 تشطيبات وديكور": [
+        {"id": "s26", "name": "خشب سويد ملبس قشر سنديان",     "price": "حسب الطلب"},
+        {"id": "s27", "name": "جبس بورد + أسقف مستعارة",      "price": "حسب الطلب"},
+        {"id": "s28", "name": "دهانات فاخرة",                  "price": "حسب الطلب"},
+    ],
+}
+
+# ══════════════════════════════════════════════════════════════
+# 🏗️  6 أقسام الخدمات
+# ══════════════════════════════════════════════════════════════
+SECTIONS = [
+    {
+        "name": "المقاولات العامة", "icon": "🏗️",
+        "desc": "تنفيذ المشاريع الإنشائية الكبرى والصغرى بكفاءة عالية من الصفر حتى التسليم",
+        "items": ["بناء المباني السكنية والتجارية", "إدارة المشاريع الكاملة", "توريد مواد البناء", "الإشراف الهندسي"],
+    },
+    {
+        "name": "التصميم الهندسي", "icon": "📐",
+        "desc": "تصميم معماري وإنشائي احترافي بأحدث البرامج والأساليب العالمية",
+        "items": ["التصميم المعماري ثلاثي الأبعاد", "الرسومات الهندسية التنفيذية", "دراسات الجدوى الإنشائية", "استخراج التراخيص"],
+    },
+    {
+        "name": "الكهرباء والميكانيك", "icon": "⚡",
+        "desc": "تركيب وصيانة جميع الأنظمة الكهربائية والميكانيكية وفق أعلى معايير السلامة",
+        "items": ["تمديدات كهربائية كاملة", "أنظمة التكييف المركزي", "أنظمة الإنذار والحريق", "الطاقة الشمسية"],
+    },
+    {
+        "name": "السباكة والصرف", "icon": "💧",
+        "desc": "تمديد شبكات المياه والصرف الصحي بمواد عالية الجودة وضمانات طويلة الأمد",
+        "items": ["شبكات المياه الباردة والساخنة", "شبكات الصرف الصحي", "أنظمة معالجة المياه", "صيانة وإصلاح الشبكات"],
+    },
+    {
+        "name": "الديكور والتشطيب", "icon": "🎨",
+        "desc": "تشطيبات داخلية وخارجية فاخرة تجمع بين الجماليات والوظيفية",
+        "items": ["أعمال الجبس والدهان", "تركيب السيراميك والرخام", "الأسقف المستعارة والجبسية", "الواجهات الزجاجية"],
+    },
+    {
+        "name": "تنسيق الحدائق", "icon": "🌿",
+        "desc": "تصميم وتنفيذ الحدائق والمساحات الخضراء بأسلوب فني راقٍ",
+        "items": ["تصميم الحدائق الخارجية", "أنظمة الري الأوتوماتيكي", "زراعة الأشجار والنباتات", "الصيانة الدورية"],
+    },
+]
+
+# ══════════════════════════════════════════════════════════════
+# 🧠  FAQ ذكي
 # ══════════════════════════════════════════════════════════════
 FAQ = [
     {
-        "keywords": ["سعر", "كم", "تكلفة", "تكلف", "بكم", "أسعار"],
+        "keywords": ["سعر", "كم", "تكلفة", "بكم", "أسعار", "تكلف"],
         "answer": (
-            "💰 *أسعارنا تبدأ من 65$ للمتر المربع*\n\n"
-            "لدينا 6 باقات تناسب كل الميزانيات:\n"
-            "• 🏠 الاقتصادية — 65$/م²\n"
-            "• 💳 التقسيط — 85$/م²\n"
+            "💰 *أسعارنا تبدأ من 65$ للغرفة*\n\n"
+            "• 🏠 الاقتصادية — 65$/غرفة\n"
+            "• 💳 التقسيط الثانية — 85$/م²\n"
+            "• 💳 التقسيط الأولى — 110$/م²\n"
             "• 🏢 المتوسطة — 120$/م²\n"
             "• ⭐ الممتازة — 180$/م²\n"
             "• 👑 الفاخرة — 200$/م²\n"
             "• 💎 السوبر فاخرة — 300$/م²\n\n"
-            "اضغط /start للاستعراض الكامل أو استخدم الحاسبة لمعرفة تكلفة مشروعك تحديداً 🧮"
-        ),
-    },
-    {
-        "keywords": ["وين", "فين", "موقع", "عنوان", "حمص", "سوريا"],
-        "answer": (
-            "📍 *موقعنا*\n\n"
-            "الشركة الهندسية التقدمية\n"
-            "📌 حمص — سوريا\n\n"
-            f"📱 للتواصل: *{PHONE}*\n"
-            f"🌐 [زيارة الموقع]({WEBSITE})"
+            "استخدم الحاسبة لمعرفة تكلفة مشروعك تحديداً 🧮"
         ),
     },
     {
         "keywords": ["ضمان", "كفالة", "ضمانة"],
         "answer": (
             "✅ *الضمان*\n\n"
-            "نقدم ضماناً على جميع أعمالنا:\n"
-            "• ضمان سنة كاملة على أعمال السباكة\n"
-            "• ضمان سنتين على أعمال الكهرباء\n"
-            "• ضمان على جودة مواد التشطيب\n\n"
-            "للاستفسار أكثر تواصل معنا مباشرة 📞"
+            "• ضمان سنة على السباكة\n"
+            "• ضمان سنتين على الكهرباء\n"
+            "• ضمان على جودة مواد التشطيب\n"
+            "• برميل المسعود كفالة 5 سنوات\n\n"
+            "نلتزم بجودة عملنا 💪"
         ),
     },
     {
-        "keywords": ["تقسيط", "دفع", "قسط", "أقساط"],
+        "keywords": ["تقسيط", "قسط", "أقساط", "دفع"],
         "answer": (
             "💳 *نظام التقسيط*\n\n"
-            "نعم! نوفر خيارات تقسيط مريحة:\n"
-            "• تقسيط 12 شهر\n"
-            "• تقسيط 24 شهر\n\n"
-            "استخدم الحاسبة لمعرفة قيمة القسط الشهري لمشروعك 🧮\n"
-            "أو تواصل معنا مباشرة للتفاصيل 📱"
+            "نوفر تقسيطاً مريحاً:\n"
+            "• قسط 12 شهر\n"
+            "• قسط 24 شهر\n\n"
+            "استخدم الحاسبة لمعرفة قيمة القسط الشهري 🧮"
         ),
     },
     {
-        "keywords": ["كم وقت", "مدة", "متى", "ينتهي", "تنتهي"],
+        "keywords": ["وين", "فين", "عنوان", "موقع", "حمص"],
+        "answer": (
+            f"📍 *موقعنا*\n\n{ADDRESS}\n\n"
+            f"📱 {PHONE}\n"
+            f"🌐 [الموقع]({WEBSITE})"
+        ),
+    },
+    {
+        "keywords": ["مدة", "وقت", "متى", "ينتهي"],
         "answer": (
             "⏱️ *مدة التنفيذ*\n\n"
-            "تعتمد على حجم المشروع:\n"
             "• شقة صغيرة (80-100م²): 3-4 أسابيع\n"
             "• شقة متوسطة (100-150م²): 4-6 أسابيع\n"
             "• فيلا أو مشروع كبير: حسب الاتفاق\n\n"
-            "نلتزم بالمواعيد المتفق عليها ✅"
+            "نلتزم بالمواعيد ✅"
         ),
     },
     {
-        "keywords": ["خبرة", "منذ", "سنة", "سنوات", "تجربة"],
-        "answer": (
-            "🏆 *خبرتنا*\n\n"
-            "• منذ عام *2005* في المجال\n"
-            "• أكثر من *500 مشروع منجز*\n"
-            "• أكثر من *200 عميل راضٍ*\n"
-            "• *20 سنة* خبرة متراكمة\n"
-            "• *15 قسم* متخصص\n\n"
-            "جودتنا تتحدث عن نفسها 💪"
-        ),
-    },
-    {
-        "keywords": ["طاقة شمسية", "سولار", "كهرباء شمسية", "ألواح"],
+        "keywords": ["طاقة شمسية", "سولار", "ألواح", "بطارية"],
         "answer": (
             "☀️ *الطاقة الشمسية*\n\n"
-            "نوفر حلول طاقة شمسية متكاملة:\n"
-            "• 4 ألواح 400W (متضمنة في الباقة الفاخرة)\n"
-            "• 8 ألواح 400W (متضمنة في السوبر فاخرة)\n"
-            "• بطاريات 200A و 300A\n"
+            "• 4 ألواح 400W (الباقة الفاخرة)\n"
+            "• 8 ألواح 400W + بطارية 300A (السوبر فاخرة)\n"
             "• تركيب وصيانة كاملة\n\n"
-            "للاستفسار تواصل معنا 📱"
+            "متوفرة أيضاً في المتجر الاختياري ☀️"
         ),
     },
 ]
 
 # ══════════════════════════════════════════════════════════════
-# 🔄  حالات المحادثة (ConversationHandler)
+# 🔄  حالات المحادثة
 # ══════════════════════════════════════════════════════════════
-# حاسبة التكاليف
-CALC_CHOOSE_PKG, CALC_AREA, CALC_RATE = range(3)
-
-# نموذج الطلب
-ORDER_NAME, ORDER_AREA_TEXT, ORDER_REGION, ORDER_PROJECT_TYPE, ORDER_NOTES = range(5, 10)
-
-# تقييم
-RATING_WAIT = 20
+CALC_PKG, CALC_AREA, CALC_RATE = range(3)
+ORD_NAME, ORD_AREA, ORD_REGION, ORD_TYPE, ORD_NOTES = range(5, 10)
 
 # ══════════════════════════════════════════════════════════════
 # 🛠️  دوال مساعدة
 # ══════════════════════════════════════════════════════════════
-def main_menu_keyboard():
+def btn(text, cb): return InlineKeyboardButton(text, callback_data=cb)
+def url_btn(text, url): return InlineKeyboardButton(text, url=url)
+def home_btn(): return btn("🏠 الرئيسية", "back")
+
+def main_kb():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("📦 الباقات والأسعار",       callback_data="packages")],
-        [InlineKeyboardButton("🧮 احسب تكلفة مشروعك",     callback_data="calc_start"),
-         InlineKeyboardButton("📋 اطلب عرض سعر",          callback_data="order_start")],
-        [InlineKeyboardButton("🛒 المتجر الاختياري",       callback_data="shop"),
-         InlineKeyboardButton("🏗️ أعمالنا السابقة",       callback_data="portfolio")],
-        [InlineKeyboardButton("❓ الأسئلة الشائعة",        callback_data="faq"),
-         InlineKeyboardButton("ℹ️ من نحن",                callback_data="about")],
-        [InlineKeyboardButton("📞 تواصل معنا",             callback_data="contact")],
-        [InlineKeyboardButton("🌐 زيارة الموقع",           url=WEBSITE)],
+        [btn("📦 الباقات والأسعار", "packages")],
+        [btn("🧮 حاسبة التكاليف", "calc_start"),
+         btn("📋 اطلب عرض سعر", "order_start")],
+        [btn("🛒 المتجر الاختياري", "shop_home"),
+         btn("🏗️ أقسام الخدمات", "sections")],
+        [btn("❓ الأسئلة الشائعة", "faq"),
+         btn("ℹ️ من نحن", "about")],
+        [btn("📞 تواصل معنا", "contact")],
+        [url_btn("🌐 زيارة الموقع", WEBSITE)],
     ])
 
-def back_to_main_btn():
-    """زر ثابت للرجوع للقائمة الرئيسية"""
-    return InlineKeyboardButton("🏠 الرئيسية", callback_data="back")
-
-async def typing(update_or_query, ctx):
-    """يُظهر مؤشر الكتابة قبل الرد — يجعل البوت يبدو أكثر حيوية"""
+async def typing(update, ctx):
     try:
-        chat_id = (
-            update_or_query.message.chat_id
-            if hasattr(update_or_query, "message") and update_or_query.message
-            else update_or_query.effective_chat.id
-        )
-        await ctx.bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
-    except Exception:
-        pass
+        cid = update.message.chat_id if hasattr(update, "message") and update.message else update.effective_chat.id
+        await ctx.bot.send_chat_action(chat_id=cid, action=ChatAction.TYPING)
+    except: pass
 
-async def notify_admin(ctx: ContextTypes.DEFAULT_TYPE, message: str, reply_markup=None):
-    """إرسال إشعار للمشرف"""
+async def notify_admin(ctx, text, kb=None):
     if ADMIN_ID:
         try:
-            await ctx.bot.send_message(
-                chat_id=ADMIN_ID,
-                text=message,
-                parse_mode="Markdown",
-                reply_markup=reply_markup,
-            )
+            await ctx.bot.send_message(chat_id=ADMIN_ID, text=text, parse_mode="Markdown", reply_markup=kb)
         except Exception as e:
-            logger.warning(f"تعذّر إرسال إشعار للمشرف: {e}")
+            logger.warning(f"Admin notify failed: {e}")
 
-# ══════════════════════════════════════════════════════════════
-# 🏠  /start — رسالة الترحيب
-# ══════════════════════════════════════════════════════════════
-WELCOME = """🏗️ *أهلاً وسهلاً في الشركة الهندسية التقدمية* 👋
+WELCOME = """🏗️ *أهلاً بك في الشركة الهندسية التقدمية* 👋
 
 سباكة • كهرباء • تشطيبات
 
-نحن رائدون في مجال المقاولات والإنشاءات منذ *2005* 🏆
-أكثر من *500 مشروع منجز* في حمص وسوريا
+🏆 رائدون في المقاولات منذ *2005*
+✅ أكثر من *500 مشروع منجز* في حمص وسوريا
+👨‍💼 المدير: الأستاذ عبدالله الشيخ
 
 ━━━━━━━━━━━━━━━━━━
-كيف يمكنني مساعدتك اليوم؟ 👇"""
+كيف يمكنني مساعدتك؟ 👇"""
 
+# ══════════════════════════════════════════════════════════════
+# 🏠  /start
+# ══════════════════════════════════════════════════════════════
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await typing(update, ctx)
-    # إرسال صورة الشركة مع رسالة الترحيب
     try:
         await update.message.reply_photo(
             photo="https://raw.githubusercontent.com/AliAhmad-1997/Advance-Engineering-Company/main/construction-site.png",
-            caption=WELCOME,
-            parse_mode="Markdown",
-            reply_markup=main_menu_keyboard(),
+            caption=WELCOME, parse_mode="Markdown", reply_markup=main_kb()
         )
-    except Exception:
-        # fallback بدون صورة إذا فشل التحميل
-        await update.message.reply_text(
-            WELCOME, parse_mode="Markdown", reply_markup=main_menu_keyboard()
-        )
+    except:
+        await update.message.reply_text(WELCOME, parse_mode="Markdown", reply_markup=main_kb())
 
-# ══════════════════════════════════════════════════════════════
-# 📞  /contact_support
-# ══════════════════════════════════════════════════════════════
 async def contact_support(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await typing(update, ctx)
-    txt = (
-        "📞 *تواصل مع الدعم*\n\n"
-        f"📱 واتساب: *{PHONE}*\n"
-        f"🌐 الموقع: [اضغط هنا]({WEBSITE})\n\n"
-        "⏰ نرد على جميع الاستفسارات خلال ساعات العمل"
-    )
     kb = InlineKeyboardMarkup([
-        [InlineKeyboardButton("💬 واتساب", url=WHATSAPP)],
-        [InlineKeyboardButton("🌐 الموقع", url=WEBSITE)],
-        [back_to_main_btn()],
+        [url_btn("💬 واتساب", WHATSAPP)],
+        [url_btn("🌐 الموقع", WEBSITE)],
+        [home_btn()],
     ])
-    await update.message.reply_text(txt, parse_mode="Markdown", reply_markup=kb)
-
-# ══════════════════════════════════════════════════════════════
-# 🌐  /language
-# ══════════════════════════════════════════════════════════════
-async def language_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    await typing(update, ctx)
     await update.message.reply_text(
-        "🌐 *اللغة / Language*\n\n"
-        "البوت يعمل باللغة العربية حالياً\n"
-        "_The bot currently operates in Arabic_",
+        f"📞 *تواصل معنا*\n\n📱 {PHONE}\n📧 {EMAIL}\n📍 {ADDRESS}\n\n⏰ الأحد-الخميس: 8ص-6م",
+        parse_mode="Markdown", reply_markup=kb
+    )
+
+async def language_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "🌐 *اللغة / Language*\n\nالبوت يعمل باللغة العربية حالياً\n_Arabic only for now_",
         parse_mode="Markdown",
-        reply_markup=InlineKeyboardMarkup([[back_to_main_btn()]]),
+        reply_markup=InlineKeyboardMarkup([[home_btn()]])
     )
 
 # ══════════════════════════════════════════════════════════════
 # 📦  الباقات
 # ══════════════════════════════════════════════════════════════
-async def show_packages(query):
+async def show_packages(q):
     kb = [
-        [InlineKeyboardButton(f"{p['icon']} {p['name']} — {p['price']}$/م²", callback_data=f"pkg_{k.split('_')[1]}")]
+        [btn(f"{p['icon']} {p['name']} — {p['price']}$ ({p['unit']})", f"pkg_{k}")]
         for k, p in PACKAGES.items()
     ]
-    kb.append([back_to_main_btn()])
-    await query.edit_message_caption(
-        caption="📦 *اختر الباقة لتعرف تفاصيلها:*\n\n_الأسعار شاملة المواد والعمالة_",
-        parse_mode="Markdown",
-        reply_markup=InlineKeyboardMarkup(kb),
+    kb.append([home_btn()])
+    await q.edit_message_caption(
+        caption="📦 *الباقات والأسعار*\n\n_اختر باقة لترى تفاصيلها الكاملة_\n\n⚠️ الأسعار شاملة المواد والعمالة",
+        parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb)
     )
 
-async def show_package_detail(query, key):
+async def show_pkg_detail(q, key):
     p = PACKAGES.get(key)
-    if not p:
-        return
-    txt = (
-        f"{p['icon']} *{p['name']}*\n"
-        f"_{p['desc']}_\n\n"
-        f"💰 *السعر: {p['price']}$ للمتر المربع*\n\n"
-        + "\n".join(f"• {f}" for f in p["features"])
-        + f"\n\n📐 *مثال:* شقة 100م² = *{p['price'] * 100:,}$*"
-    )
+    if not p: return
+    txt = f"{p['icon']} *{p['name']}*\n_{p['desc']}_\n\n💰 *{p['price']}$ {p['unit']}*\n\n"
+    for section, items in p["features"].items():
+        txt += f"*{section}:*\n"
+        txt += "\n".join(f"  ✓ {i}" for i in items) + "\n\n"
+    txt += f"📐 مثال: 100م² = *{p['price']*100:,}$*"
     kb = [
-        [InlineKeyboardButton("🧮 احسب تكلفة مشروعي بهذه الباقة", callback_data=f"calc_from_{key}")],
-        [InlineKeyboardButton("📋 اطلب عرض سعر رسمي",             callback_data=f"order_from_{key}")],
-        [InlineKeyboardButton("💬 استفسر عبر واتساب",
-                              url=f"{WHATSAPP}?text=مرحباً، أريد الاستفسار عن {p['name']} ({p['price']}$/م²)")],
-        [InlineKeyboardButton("🔙 رجوع للباقات", callback_data="packages")],
+        [btn("🧮 احسب تكلفة مشروعي", f"calc_from_{key}")],
+        [btn("📋 اطلب عرض سعر رسمي", f"order_from_{key}")],
+        [url_btn("💬 استفسر واتساب", f"{WHATSAPP}?text=أريد الاستفسار عن {p['name']}")],
+        [btn("🔙 رجوع للباقات", "packages"), home_btn()],
     ]
-    await query.edit_message_caption(
-        caption=txt, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb)
-    )
+    await q.edit_message_caption(caption=txt, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
 
 # ══════════════════════════════════════════════════════════════
-# 🧮  حاسبة التكاليف — ConversationHandler
+# 🧮  حاسبة التكاليف
 # ══════════════════════════════════════════════════════════════
 async def calc_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    # إذا جاء من باقة محددة مباشرة
-    if query.data.startswith("calc_from_"):
-        key = query.data.replace("calc_from_", "")
-        p   = PACKAGES.get(key)
+    q = update.callback_query
+    await q.answer()
+    if q.data.startswith("calc_from_"):
+        key = q.data.replace("calc_from_", "")
+        p = PACKAGES.get(key)
         if p:
             ctx.user_data["calc_pkg"] = key
-            await query.edit_message_caption(
-                caption=(
-                    f"🧮 *حاسبة التكاليف*\n\n"
-                    f"الباقة: {p['icon']} *{p['name']}* ({p['price']}$/م²)\n\n"
-                    "📐 أرسل لي *المساحة بالمتر المربع:*\n"
-                    "_مثال: 120_"
-                ),
+            await q.edit_message_caption(
+                caption=f"🧮 *حاسبة التكاليف*\n\nالباقة: {p['icon']} *{p['name']}* ({p['price']}$ {p['unit']})\n\n📐 أرسل المساحة بالمتر المربع:\n_مثال: 120_",
                 parse_mode="Markdown",
-                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("❌ إلغاء", callback_data="back")]]),
+                reply_markup=InlineKeyboardMarkup([[btn("❌ إلغاء", "back")]])
             )
             return CALC_AREA
-    # اختيار الباقة أولاً
-    kb = [
-        [InlineKeyboardButton(f"{p['icon']} {p['name']} ({p['price']}$/م²)", callback_data=f"cpkg_{k}")]
-        for k, p in PACKAGES.items()
-    ]
-    kb.append([InlineKeyboardButton("❌ إلغاء", callback_data="back")])
-    await query.edit_message_caption(
+    kb = [[btn(f"{p['icon']} {p['name']} ({p['price']}$)", f"cpkg_{k}")] for k, p in PACKAGES.items()]
+    kb.append([btn("❌ إلغاء", "back")])
+    await q.edit_message_caption(
         caption="🧮 *حاسبة التكاليف*\n\nاختر الباقة أولاً:",
-        parse_mode="Markdown",
-        reply_markup=InlineKeyboardMarkup(kb),
+        parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb)
     )
-    return CALC_CHOOSE_PKG
+    return CALC_PKG
 
 async def calc_choose_pkg(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    key = query.data.replace("cpkg_", "")
-    p   = PACKAGES.get(key)
-    if not p:
-        return CALC_CHOOSE_PKG
+    q = update.callback_query
+    await q.answer()
+    key = q.data.replace("cpkg_", "")
+    p = PACKAGES.get(key)
+    if not p: return CALC_PKG
     ctx.user_data["calc_pkg"] = key
-    await query.edit_message_caption(
-        caption=(
-            f"🧮 *حاسبة التكاليف*\n\n"
-            f"الباقة: {p['icon']} *{p['name']}* ({p['price']}$/م²)\n\n"
-            "📐 أرسل لي *المساحة بالمتر المربع:*\n"
-            "_مثال: 120_"
-        ),
+    await q.edit_message_caption(
+        caption=f"🧮 *حاسبة التكاليف*\n\nالباقة: {p['icon']} *{p['name']}* ({p['price']}$ {p['unit']})\n\n📐 أرسل المساحة بالمتر المربع:\n_مثال: 120_",
         parse_mode="Markdown",
-        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("❌ إلغاء", callback_data="back")]]),
+        reply_markup=InlineKeyboardMarkup([[btn("❌ إلغاء", "back")]])
     )
     return CALC_AREA
 
 async def calc_area(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await typing(update, ctx)
-    text = update.message.text.strip().replace(",", "").replace("م²", "").replace("م2", "")
+    text = update.message.text.strip().replace(",", "").replace("م²","").replace("م2","")
     try:
         area = float(text)
-        if area <= 0 or area > 50000:
-            raise ValueError
-    except ValueError:
-        await update.message.reply_text(
-            "⚠️ أرسل رقماً صحيحاً فقط، مثال: *120*\n_لا حروف ولا رموز_",
-            parse_mode="Markdown",
-        )
+        if area <= 0 or area > 50000: raise ValueError
+    except:
+        await update.message.reply_text("⚠️ أرسل رقماً صحيحاً فقط، مثال: *120*", parse_mode="Markdown")
         return CALC_AREA
     ctx.user_data["calc_area"] = area
-    kb = [
-        [InlineKeyboardButton("⏭️ بالدولار فقط (تخطى)", callback_data="skip_rate")],
-        [InlineKeyboardButton("❌ إلغاء", callback_data="back")],
-    ]
+    kb = InlineKeyboardMarkup([
+        [btn("💵 دولار فقط (تخطى)", "skip_rate")],
+        [btn("❌ إلغاء", "back")],
+    ])
     await update.message.reply_text(
-        f"✅ المساحة: *{area:g} م²*\n\n"
-        "💱 أرسل *سعر صرف الدولار* بالليرة السورية للحساب بالعملتين\n"
-        "_مثال: 13000_\n\n"
-        "أو اضغط *تخطى* للحساب بالدولار فقط",
-        parse_mode="Markdown",
-        reply_markup=InlineKeyboardMarkup(kb),
+        f"✅ المساحة: *{area:g} م²*\n\n💱 أرسل سعر صرف الدولار بالليرة للحساب بالعملتين\n_مثال: 13000_\n\nأو اضغط *تخطى* للدولار فقط",
+        parse_mode="Markdown", reply_markup=kb
     )
     return CALC_RATE
 
 async def calc_rate(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await typing(update, ctx)
-    text = update.message.text.strip().replace(",", "")
     try:
-        rate = float(text)
-        if rate <= 0:
-            raise ValueError
-    except ValueError:
-        await update.message.reply_text(
-            "⚠️ أرسل رقماً صحيحاً، مثال: *13000*",
-            parse_mode="Markdown",
-        )
+        rate = float(update.message.text.strip().replace(",",""))
+        if rate <= 0: raise ValueError
+    except:
+        await update.message.reply_text("⚠️ أرسل رقماً صحيحاً، مثال: *13000*", parse_mode="Markdown")
         return CALC_RATE
-    await _send_calc_result(update.message, ctx, rate=rate)
+    await _calc_result(update.message, ctx, rate)
     return ConversationHandler.END
 
-async def calc_skip_rate(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    await _send_calc_result(query.message, ctx, rate=None)
+async def calc_skip(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    await _calc_result(q.message, ctx, None)
     return ConversationHandler.END
 
-async def _send_calc_result(message, ctx, rate=None):
-    """إرسال نتيجة الحساب — داخلية"""
-    pkg_key = ctx.user_data.get("calc_pkg", "pkg_120")
-    area    = ctx.user_data.get("calc_area", 100)
-    p       = PACKAGES.get(pkg_key, PACKAGES["pkg_120"])
-    price   = p["price"]
-    total   = round(area * price)
-    m12     = round(total / 12)
-    m24     = round(total / 24)
+async def _calc_result(msg, ctx, rate=None):
+    key   = ctx.user_data.get("calc_pkg", "pkg_120")
+    area  = ctx.user_data.get("calc_area", 100)
+    p     = PACKAGES.get(key, PACKAGES["pkg_120"])
+    price = p["price"]
+    total = round(area * price)
+    m12   = round(total / 12)
+    m24   = round(total / 24)
 
     txt = (
         f"🧮 *نتيجة الحساب*\n\n"
         f"{p['icon']} *{p['name']}*\n"
         f"📐 المساحة: *{area:g} م²*\n"
-        f"💰 سعر المتر: *{price} $*\n\n"
+        f"💰 السعر: *{price}$ {p['unit']}*\n\n"
         "━━━━━━━━━━━━━━━━━━\n"
         f"💵 *الإجمالي: {total:,} $*\n"
         f"📅 قسط 12 شهر: *{m12:,} $*\n"
@@ -467,287 +535,239 @@ async def _send_calc_result(message, ctx, rate=None):
         "━━━━━━━━━━━━━━━━━━"
     )
     if rate:
-        total_syp = round(total * rate)
-        m12_syp   = round(m12   * rate)
-        m24_syp   = round(m24   * rate)
         txt += (
-            f"\n\n🇸🇾 *بالليرة السورية* (1$={rate:,.0f} ل.س)\n"
+            f"\n\n🇸🇾 *بالليرة* (1$={rate:,.0f} ل.س)\n"
             "━━━━━━━━━━━━━━━━━━\n"
-            f"💴 *الإجمالي: {total_syp:,} ل.س*\n"
-            f"📅 قسط 12 شهر: *{m12_syp:,} ل.س*\n"
-            f"📅 قسط 24 شهر: *{m24_syp:,} ل.س*\n"
+            f"💴 *{round(total*rate):,} ل.س*\n"
+            f"📅 قسط 12: *{round(m12*rate):,} ل.س*\n"
+            f"📅 قسط 24: *{round(m24*rate):,} ل.س*\n"
             "━━━━━━━━━━━━━━━━━━"
         )
-    txt += "\n_* الأسعار تقديرية وتشمل المواد والعمالة_"
+    txt += "\n_* تقديرية شاملة المواد والعمالة_"
 
-    wa_text = f"مرحباً، أريد مقايسة لـ {p['name']}%0aالمساحة: {area:g} م²%0aالإجمالي: {total:,}$"
-    if rate:
-        wa_text += f"%0aبالليرة: {round(total * rate):,} ل.س"
-
-    kb = [
-        [InlineKeyboardButton("📋 اطلب عرض سعر رسمي",        callback_data="order_start")],
-        [InlineKeyboardButton("💬 أرسل المقايسة عبر واتساب", url=f"{WHATSAPP}?text={wa_text}")],
-        [InlineKeyboardButton("🔄 احسب باقة أخرى",            callback_data="calc_start")],
-        [InlineKeyboardButton("🔙 القائمة الرئيسية",          callback_data="back")],
-    ]
-    await message.reply_text(txt, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
-    # طلب التقييم بعد الحساب
-    await _ask_rating(message, ctx)
+    wa = f"مرحباً، أريد مقايسة\nالباقة: {p['name']}\nالمساحة: {area:g}م²\nالإجمالي: {total:,}$"
+    kb = InlineKeyboardMarkup([
+        [btn("📋 اطلب عرض سعر رسمي", "order_start")],
+        [url_btn("💬 أرسل المقايسة واتساب", f"{WHATSAPP}?text={wa}")],
+        [btn("🔄 احسب باقة أخرى", "calc_start"), home_btn()],
+    ])
+    await msg.reply_text(txt, parse_mode="Markdown", reply_markup=kb)
+    await _ask_rating(msg, ctx)
 
 # ══════════════════════════════════════════════════════════════
-# 📋  نظام الطلبات الرسمي — ConversationHandler
+# 🛒  المتجر
+# ══════════════════════════════════════════════════════════════
+async def show_shop_home(q):
+    cats = list(SHOP.keys())
+    kb = [[btn(f"{c} ({len(SHOP[c])} منتج)", f"shop_cat_{i}")] for i, c in enumerate(cats)]
+    kb.append([btn("🛒 سلتي", "cart_view"), home_btn()])
+    total = sum(len(v) for v in SHOP.values())
+    await q.edit_message_caption(
+        caption=f"🛒 *المتجر الاختياري*\n\n{total} منتج في {len(cats)} فئات\nاختر الفئة التي تريدها 👇",
+        parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb)
+    )
+
+async def show_shop_cat(q, cat_idx):
+    cats = list(SHOP.keys())
+    cat  = cats[cat_idx]
+    items = SHOP[cat]
+    kb = [[btn(f"➕ {item['name']}", f"cart_add_{item['id']}")] for item in items]
+    kb.append([btn("🛒 سلتي", "cart_view"), btn("🔙 رجوع", "shop_home")])
+    await q.edit_message_caption(
+        caption=f"{cat}\n\nاضغط ➕ لإضافة منتج للسلة:",
+        parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb)
+    )
+
+async def cart_add(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    item_id = q.data.replace("cart_add_", "")
+    cart = ctx.user_data.setdefault("cart", [])
+    # إيجاد المنتج
+    for items in SHOP.values():
+        for item in items:
+            if item["id"] == item_id:
+                cart.append(item["name"])
+                await q.answer(f"✅ تمت إضافة: {item['name']}", show_alert=False)
+                return
+    await q.answer("❌ لم يتم العثور على المنتج", show_alert=True)
+
+async def show_cart(q, ctx):
+    cart = ctx.user_data.get("cart", [])
+    if not cart:
+        await q.edit_message_caption(
+            caption="🛒 *سلتك فارغة*\n\nأضف منتجات من المتجر أولاً",
+            parse_mode="Markdown",
+            reply_markup=InlineKeyboardMarkup([[btn("🛒 تصفح المتجر", "shop_home"), home_btn()]])
+        )
+        return
+    txt = "🛒 *سلتك*\n\n"
+    for i, item in enumerate(cart, 1):
+        txt += f"{i}. {item}\n"
+    txt += f"\n_إجمالي: {len(cart)} منتج_\n\nللاستفسار عن الأسعار تواصل معنا مباشرة"
+    wa_list = "%0a".join(f"{i}. {item}" for i, item in enumerate(cart, 1))
+    kb = InlineKeyboardMarkup([
+        [url_btn("💬 اطلب عبر واتساب", f"{WHATSAPP}?text=أريد الاستفسار عن:%0a{wa_list}")],
+        [btn("🗑️ تفريغ السلة", "cart_clear"), btn("🛒 تصفح أكثر", "shop_home")],
+        [home_btn()],
+    ])
+    await q.edit_message_caption(caption=txt, parse_mode="Markdown", reply_markup=kb)
+
+# ══════════════════════════════════════════════════════════════
+# 🏗️  الأقسام
+# ══════════════════════════════════════════════════════════════
+async def show_sections(q):
+    kb = [[btn(f"{s['icon']} {s['name']}", f"sec_{i}")] for i, s in enumerate(SECTIONS)]
+    kb.append([home_btn()])
+    await q.edit_message_caption(
+        caption="🏗️ *أقسام خدماتنا*\n\nنغطي جميع احتياجاتك الإنشائية تحت سقف واحد 👇",
+        parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb)
+    )
+
+async def show_section_detail(q, idx):
+    s = SECTIONS[idx]
+    txt = f"{s['icon']} *{s['name']}*\n\n_{s['desc']}_\n\n*ما نقدمه:*\n"
+    txt += "\n".join(f"✓ {item}" for item in s["items"])
+    kb = InlineKeyboardMarkup([
+        [url_btn("📋 اطلب الخدمة واتساب", f"{WHATSAPP}?text=أريد الاستفسار عن خدمة {s['name']}")],
+        [btn("🔙 رجوع للأقسام", "sections"), home_btn()],
+    ])
+    await q.edit_message_caption(caption=txt, parse_mode="Markdown", reply_markup=kb)
+
+# ══════════════════════════════════════════════════════════════
+# 📋  نظام الطلبات
 # ══════════════════════════════════════════════════════════════
 async def order_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    # إذا جاء من باقة محددة
-    if query.data.startswith("order_from_"):
-        key = query.data.replace("order_from_", "")
-        ctx.user_data["order_pkg"] = key
+    q = update.callback_query
+    await q.answer()
+    if q.data.startswith("order_from_"):
+        ctx.user_data["order_pkg"] = q.data.replace("order_from_", "")
     else:
         ctx.user_data.pop("order_pkg", None)
-
-    await query.edit_message_caption(
-        caption=(
-            "📋 *طلب عرض سعر رسمي*\n\n"
-            "سأحتاج منك بعض المعلومات لإعداد عرض مخصص لك 📝\n\n"
-            "*الخطوة 1/5 — ما اسمك الكريم؟*"
-        ),
+    await q.edit_message_caption(
+        caption="📋 *طلب عرض سعر رسمي*\n\nسأحتاج بعض المعلومات لإعداد عرض مخصص 📝\n\n*الخطوة 1/5 — ما اسمك الكريم؟*",
         parse_mode="Markdown",
-        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("❌ إلغاء", callback_data="back")]]),
+        reply_markup=InlineKeyboardMarkup([[btn("❌ إلغاء", "back")]])
     )
-    return ORDER_NAME
+    return ORD_NAME
 
-async def order_name(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+async def ord_name(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await typing(update, ctx)
-    ctx.user_data["order_name"] = update.message.text.strip()
+    ctx.user_data["ord_name"] = update.message.text.strip()
     await update.message.reply_text(
-        f"👋 أهلاً *{ctx.user_data['order_name']}*!\n\n"
-        "*الخطوة 2/5 — ما مساحة المشروع بالمتر المربع؟*\n"
-        "_مثال: 150_",
-        parse_mode="Markdown",
+        f"👋 أهلاً *{ctx.user_data['ord_name']}*!\n\n*الخطوة 2/5 — مساحة المشروع بالمتر المربع؟*\n_مثال: 150_",
+        parse_mode="Markdown"
     )
-    return ORDER_AREA_TEXT
+    return ORD_AREA
 
-async def order_area(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+async def ord_area(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await typing(update, ctx)
-    text = update.message.text.strip().replace(",", "").replace("م²", "").replace("م2", "")
     try:
-        area = float(text)
-        if area <= 0 or area > 50000:
-            raise ValueError
-        ctx.user_data["order_area"] = area
-    except ValueError:
-        await update.message.reply_text(
-            "⚠️ أرسل رقماً صحيحاً فقط، مثال: *150*", parse_mode="Markdown"
-        )
-        return ORDER_AREA_TEXT
+        area = float(update.message.text.strip().replace(",","").replace("م²",""))
+        if area <= 0 or area > 50000: raise ValueError
+        ctx.user_data["ord_area"] = area
+    except:
+        await update.message.reply_text("⚠️ أرسل رقماً صحيحاً، مثال: *150*", parse_mode="Markdown")
+        return ORD_AREA
     await update.message.reply_text(
-        "*الخطوة 3/5 — في أي منطقة المشروع؟*\n"
-        "_مثال: حمص — الزهراء_",
-        parse_mode="Markdown",
+        "*الخطوة 3/5 — في أي منطقة المشروع؟*\n_مثال: حمص — الزهراء_",
+        parse_mode="Markdown"
     )
-    return ORDER_REGION
+    return ORD_REGION
 
-async def order_region(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+async def ord_region(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await typing(update, ctx)
-    ctx.user_data["order_region"] = update.message.text.strip()
+    ctx.user_data["ord_region"] = update.message.text.strip()
     kb = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🏠 شقة سكنية",   callback_data="otype_شقة سكنية"),
-         InlineKeyboardButton("🏢 مكتب تجاري",  callback_data="otype_مكتب تجاري")],
-        [InlineKeyboardButton("🏗️ فيلا",        callback_data="otype_فيلا"),
-         InlineKeyboardButton("🏭 مشروع تجاري", callback_data="otype_مشروع تجاري")],
-        [InlineKeyboardButton("🔧 ترميم",        callback_data="otype_ترميم"),
-         InlineKeyboardButton("📝 أخرى",         callback_data="otype_أخرى")],
+        [btn("🏠 شقة سكنية", "ot_شقة سكنية"), btn("🏢 مكتب تجاري", "ot_مكتب تجاري")],
+        [btn("🏗️ فيلا", "ot_فيلا"),           btn("🏭 مشروع تجاري", "ot_مشروع تجاري")],
+        [btn("🔧 ترميم", "ot_ترميم"),          btn("📝 أخرى", "ot_أخرى")],
     ])
-    await update.message.reply_text(
-        "*الخطوة 4/5 — ما نوع المشروع؟*",
-        parse_mode="Markdown",
-        reply_markup=kb,
-    )
-    return ORDER_PROJECT_TYPE
+    await update.message.reply_text("*الخطوة 4/5 — نوع المشروع؟*", parse_mode="Markdown", reply_markup=kb)
+    return ORD_TYPE
 
-async def order_project_type(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    ctx.user_data["order_type"] = query.data.replace("otype_", "")
-    await query.edit_message_text(
-        "*الخطوة 5/5 — أي ملاحظات أو تفاصيل إضافية؟*\n\n"
-        "_مثال: أريد إضافة طاقة شمسية، أو لدي تصميم خاص..._\n\n"
-        "أو أرسل *تخطى* إذا لا يوجد",
-        parse_mode="Markdown",
+async def ord_type(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    ctx.user_data["ord_type"] = q.data.replace("ot_", "")
+    await q.edit_message_text(
+        "*الخطوة 5/5 — أي ملاحظات إضافية؟*\n_مثال: أريد طاقة شمسية، عندي تصميم خاص..._\n\nأو أرسل *تخطى*",
+        parse_mode="Markdown"
     )
-    return ORDER_NOTES
+    return ORD_NOTES
 
-async def order_notes(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+async def ord_notes(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await typing(update, ctx)
     notes = update.message.text.strip()
-    if notes.lower() in ["تخطى", "لا", "skip", "-"]:
-        notes = "لا توجد ملاحظات"
-    ctx.user_data["order_notes"] = notes
+    if notes.lower() in ["تخطى", "skip", "-", "لا"]: notes = "لا توجد ملاحظات"
+    ctx.user_data["ord_notes"] = notes
     await _finalize_order(update.message, ctx)
     return ConversationHandler.END
 
-async def _finalize_order(message, ctx):
-    """إتمام الطلب وإرسال إشعار للمشرف"""
+async def _finalize_order(msg, ctx):
     d = ctx.user_data
     pkg_info = ""
     if d.get("order_pkg"):
         p = PACKAGES.get(d["order_pkg"])
-        if p:
-            pkg_info = f"\n📦 الباقة المهتم بها: *{p['name']}* ({p['price']}$/م²)"
+        if p: pkg_info = f"\n📦 الباقة: *{p['name']}* ({p['price']}$)"
 
-    # رسالة التأكيد للمستخدم
-    confirm_txt = (
-        "✅ *تم استلام طلبك بنجاح!*\n\n"
+    # فاتورة للمستخدم
+    invoice = (
+        "✅ *تم استلام طلبك!*\n\n"
         "━━━━━━━━━━━━━━━━━━\n"
-        f"👤 الاسم: *{d.get('order_name', '-')}*\n"
-        f"📐 المساحة: *{d.get('order_area', '-')} م²*\n"
-        f"📍 المنطقة: *{d.get('order_region', '-')}*\n"
-        f"🏗️ نوع المشروع: *{d.get('order_type', '-')}*\n"
-        f"📝 الملاحظات: {d.get('order_notes', '-')}"
+        f"👤 الاسم: *{d.get('ord_name','-')}*\n"
+        f"📐 المساحة: *{d.get('ord_area','-')} م²*\n"
+        f"📍 المنطقة: *{d.get('ord_region','-')}*\n"
+        f"🏗️ النوع: *{d.get('ord_type','-')}*\n"
+        f"📝 ملاحظات: {d.get('ord_notes','-')}"
         + pkg_info +
         "\n━━━━━━━━━━━━━━━━━━\n\n"
-        "سيتواصل معك فريقنا *خلال 24 ساعة* 📞\n\n"
-        "أو يمكنك التواصل المباشر:"
+        "سيتواصل معك فريقنا خلال *24 ساعة* 📞\n"
+        f"أو تواصل مباشرة: *{PHONE}*"
     )
-    kb = [
-        [InlineKeyboardButton("💬 واتساب مباشر", url=WHATSAPP)],
-        [back_to_main_btn()],
-    ]
-    await message.reply_text(confirm_txt, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
+    kb = InlineKeyboardMarkup([
+        [url_btn("💬 واتساب مباشر", WHATSAPP)],
+        [home_btn()],
+    ])
+    await msg.reply_text(invoice, parse_mode="Markdown", reply_markup=kb)
 
     # إشعار المشرف
-    user = message.from_user
-    admin_txt = (
+    user = msg.from_user
+    admin_msg = (
         "🔔 *طلب عرض سعر جديد!*\n\n"
-        f"👤 الاسم: *{d.get('order_name', '-')}*\n"
-        f"📱 تيليغرام: @{user.username or 'لا يوجد'} (ID: `{user.id}`)\n"
-        f"📐 المساحة: *{d.get('order_area', '-')} م²*\n"
-        f"📍 المنطقة: *{d.get('order_region', '-')}*\n"
-        f"🏗️ نوع المشروع: *{d.get('order_type', '-')}*\n"
-        f"📝 الملاحظات: {d.get('order_notes', '-')}"
+        f"👤 {d.get('ord_name','-')}\n"
+        f"📱 @{user.username or 'لا يوجد'} (ID: `{user.id}`)\n"
+        f"📐 {d.get('ord_area','-')} م²\n"
+        f"📍 {d.get('ord_region','-')}\n"
+        f"🏗️ {d.get('ord_type','-')}\n"
+        f"📝 {d.get('ord_notes','-')}"
         + pkg_info
     )
     admin_kb = InlineKeyboardMarkup([
-        [InlineKeyboardButton("💬 رد مباشر عبر تيليغرام", url=f"tg://user?id={user.id}")],
-        [InlineKeyboardButton("📱 واتساب", url=WHATSAPP)],
+        [InlineKeyboardButton("💬 رد عبر تيليغرام", url=f"tg://user?id={user.id}")],
+        [url_btn("📱 واتساب", WHATSAPP)],
     ])
-    await notify_admin(ctx, admin_txt, reply_markup=admin_kb)
+    await notify_admin(ctx, admin_msg, admin_kb)
 
 # ══════════════════════════════════════════════════════════════
-# ⭐  نظام التقييم
+# ⭐  التقييم
 # ══════════════════════════════════════════════════════════════
-async def _ask_rating(message, ctx):
-    """يطلب تقييم بعد إتمام عملية"""
-    kb = InlineKeyboardMarkup([
-        [
-            InlineKeyboardButton("⭐",     callback_data="rate_1"),
-            InlineKeyboardButton("⭐⭐",   callback_data="rate_2"),
-            InlineKeyboardButton("⭐⭐⭐", callback_data="rate_3"),
-            InlineKeyboardButton("⭐⭐⭐⭐", callback_data="rate_4"),
-            InlineKeyboardButton("⭐⭐⭐⭐⭐", callback_data="rate_5"),
-        ]
-    ])
-    await message.reply_text(
-        "كيف تقيّم تجربتك مع البوت؟ 😊",
-        reply_markup=kb,
-    )
+async def _ask_rating(msg, ctx):
+    kb = InlineKeyboardMarkup([[
+        btn("⭐", "rate_1"), btn("⭐⭐", "rate_2"), btn("⭐⭐⭐", "rate_3"),
+        btn("⭐⭐⭐⭐", "rate_4"), btn("⭐⭐⭐⭐⭐", "rate_5"),
+    ]])
+    await msg.reply_text("كيف تقيّم تجربتك؟ 😊", reply_markup=kb)
 
 async def handle_rating(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    stars = int(query.data.split("_")[1])
-    star_str = "⭐" * stars
-    responses = {
-        1: "شكراً على تقييمك! سنعمل على التحسين 🙏",
-        2: "شكراً! نسعى دائماً لتقديم الأفضل 💪",
-        3: "شكراً على تقييمك! 😊",
-        4: "شكراً جزيلاً! سعداء بخدمتك 🌟",
-        5: "شكراً جزيلاً! تقييمك يشجعنا على التميز 🏆",
-    }
-    await query.edit_message_text(
-        f"{star_str}\n\n{responses[stars]}\n\nاضغط /start للعودة للقائمة",
-        parse_mode="Markdown",
-    )
-    # إشعار المشرف بالتقييم
-    user = query.from_user
-    await notify_admin(
-        ctx,
-        f"📊 *تقييم جديد*\n"
-        f"👤 @{user.username or user.first_name} (ID: `{user.id}`)\n"
-        f"التقييم: {star_str} ({stars}/5)",
-    )
-
-# ══════════════════════════════════════════════════════════════
-# 🏗️  أعمالنا السابقة
-# ══════════════════════════════════════════════════════════════
-PORTFOLIO = [
-    {
-        "title": "فيلا فاخرة — حمص",
-        "desc": "تشطيب كامل، طاقة شمسية 8 ألواح، ديكور فاخر\nالمساحة: 350م² | الباقة: السوبر فاخرة",
-        "url": "https://raw.githubusercontent.com/AliAhmad-1997/Advance-Engineering-Company/main/luxury-interior.png",
-    },
-    {
-        "title": "حمام فاخر — حمص",
-        "desc": "سيراميك إيطالي، خلاطات برنس، إضاءة LED\nتشطيب درجة أولى",
-        "url": "https://raw.githubusercontent.com/AliAhmad-1997/Advance-Engineering-Company/main/luxury-bathroom.png",
-    },
-    {
-        "title": "موقع إنشاء — مشروع تجاري",
-        "desc": "مقاولات عامة، هيكل خرساني، إشراف هندسي كامل",
-        "url": "https://raw.githubusercontent.com/AliAhmad-1997/Advance-Engineering-Company/main/construction-site.png",
-    },
-]
-
-async def show_portfolio(query):
-    await query.edit_message_caption(
-        caption=(
-            "🏗️ *أعمالنا السابقة*\n\n"
-            "اختر مشروعاً لترى تفاصيله 👇"
-        ),
-        parse_mode="Markdown",
-        reply_markup=InlineKeyboardMarkup(
-            [[InlineKeyboardButton(f"🖼️ {p['title']}", callback_data=f"port_{i}")] for i, p in enumerate(PORTFOLIO)]
-            + [[back_to_main_btn()]]
-        ),
-    )
-
-async def show_portfolio_item(query, idx):
-    p = PORTFOLIO[idx]
-    try:
-        await query.message.reply_photo(
-            photo=p["url"],
-            caption=f"🏗️ *{p['title']}*\n\n_{p['desc']}_",
-            parse_mode="Markdown",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("📋 اطلب مشروعاً مشابهاً", callback_data="order_start")],
-                [InlineKeyboardButton("🔙 رجوع للأعمال", callback_data="portfolio")],
-            ]),
-        )
-    except Exception:
-        await query.answer("تعذّر تحميل الصورة، حاول لاحقاً", show_alert=True)
-
-# ══════════════════════════════════════════════════════════════
-# ❓  الأسئلة الشائعة
-# ══════════════════════════════════════════════════════════════
-async def show_faq(query):
-    faq_topics = [
-        ("💰 الأسعار والباقات",  "faq_0"),
-        ("📍 الموقع والعنوان",    "faq_1"),
-        ("✅ الضمان",             "faq_2"),
-        ("💳 التقسيط",           "faq_3"),
-        ("⏱️ مدة التنفيذ",       "faq_4"),
-        ("🏆 خبرتنا",            "faq_5"),
-        ("☀️ الطاقة الشمسية",    "faq_6"),
-    ]
-    kb = [[InlineKeyboardButton(label, callback_data=cb)] for label, cb in faq_topics]
-    kb.append([back_to_main_btn()])
-    await query.edit_message_caption(
-        caption="❓ *الأسئلة الشائعة*\n\nاختر الموضوع الذي تريد معرفة المزيد عنه:",
-        parse_mode="Markdown",
-        reply_markup=InlineKeyboardMarkup(kb),
-    )
+    q = update.callback_query
+    await q.answer()
+    stars = int(q.data.split("_")[1])
+    s = "⭐" * stars
+    msgs = {1:"شكراً! سنتحسن 🙏", 2:"شكراً! نسعى للأفضل 💪", 3:"شكراً! 😊", 4:"شكراً! سعداء بخدمتك 🌟", 5:"شكراً! تقييمك يشجعنا 🏆"}
+    await q.edit_message_text(f"{s}\n\n{msgs[stars]}\n\n/start للقائمة الرئيسية", parse_mode="Markdown")
+    user = q.from_user
+    await notify_admin(ctx, f"📊 *تقييم جديد*\n@{user.username or user.first_name}: {s} ({stars}/5)")
 
 # ══════════════════════════════════════════════════════════════
 # 🎛️  الـ Callback الرئيسي
@@ -755,134 +775,77 @@ async def show_faq(query):
 async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
-    data = q.data
+    d = q.data
 
-    # ── الباقات ──
-    if data == "packages":
-        await show_packages(q)
-
-    elif data.startswith("pkg_"):
-        key = "pkg_" + data.split("_")[1]
-        await show_package_detail(q, key)
-
-    # ── المتجر ──
-    elif data == "shop":
-        txt = "🛒 *المتجر الاختياري*\n_مواد وتجهيزات بأفضل الأسعار_\n\n"
-        for item in SHOP_ITEMS:
-            txt += f"{item['icon']} {item['name']}\n"
-        txt += "\n💬 للاستفسار عن الأسعار تواصل معنا مباشرة"
-        kb = [
-            [InlineKeyboardButton("💬 استفسر عبر واتساب",
-                                  url=f"{WHATSAPP}?text=مرحباً، أريد الاستفسار عن المتجر الاختياري")],
-            [back_to_main_btn()],
-        ]
-        await q.edit_message_caption(caption=txt, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
-
-    # ── أعمالنا السابقة ──
-    elif data == "portfolio":
-        await show_portfolio(q)
-
-    elif data.startswith("port_"):
-        await show_portfolio_item(q, int(data.split("_")[1]))
-
-    # ── الأسئلة الشائعة (أزرار) ──
-    elif data == "faq":
-        await show_faq(q)
-
-    elif data.startswith("faq_"):
-        idx = int(data.split("_")[1])
+    if d == "packages":       await show_packages(q)
+    elif d.startswith("pkg_"): await show_pkg_detail(q, d.replace("pkg_",""))
+    elif d == "shop_home":     await show_shop_home(q)
+    elif d.startswith("shop_cat_"): await show_shop_cat(q, int(d.replace("shop_cat_","")))
+    elif d.startswith("cart_add_"): await cart_add(update, ctx)
+    elif d == "cart_view":     await show_cart(q, ctx)
+    elif d == "cart_clear":
+        ctx.user_data["cart"] = []
+        await q.edit_message_caption(caption="🗑️ تم تفريغ السلة", parse_mode="Markdown",
+            reply_markup=InlineKeyboardMarkup([[btn("🛒 تصفح المتجر","shop_home"), home_btn()]]))
+    elif d == "sections":      await show_sections(q)
+    elif d.startswith("sec_"): await show_section_detail(q, int(d.replace("sec_","")))
+    elif d == "faq":
+        topics = [("💰 الأسعار","fq_0"),("✅ الضمان","fq_1"),("💳 التقسيط","fq_2"),
+                  ("📍 الموقع","fq_3"),("⏱️ المدة","fq_4"),("☀️ الطاقة الشمسية","fq_5")]
+        kb = [[btn(t, cb)] for t, cb in topics]
+        kb.append([home_btn()])
+        await q.edit_message_caption(caption="❓ *الأسئلة الشائعة*\n\nاختر الموضوع:",
+            parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
+    elif d.startswith("fq_"):
+        idx = int(d.replace("fq_",""))
         if idx < len(FAQ):
-            await q.edit_message_caption(
-                caption=FAQ[idx]["answer"],
-                parse_mode="Markdown",
-                reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("🔙 رجوع للأسئلة", callback_data="faq")],
-                    [back_to_main_btn()],
-                ]),
-            )
-
-    # ── من نحن ──
-    elif data == "about":
-        txt = (
-            "ℹ️ *الشركة الهندسية التقدمية*\n\n"
-            "🏗️ شركة مقاولات معتمدة منذ *2005*\n"
-            "📍 حمص — سوريا\n\n"
-            "✅ أكثر من *500 مشروع منجز*\n"
-            "✅ أكثر من *200 عميل راضٍ*\n"
-            "✅ *20 سنة* خبرة في المجال\n"
-            "✅ *15 قسم* متخصص\n\n"
-            "*خدماتنا:*\n"
-            "• المقاولات العامة\n"
-            "• التصميم الهندسي\n"
-            "• الكهرباء والميكانيك\n"
-            "• السباكة والصرف\n"
-            "• الديكور والتشطيب\n"
-            "• تنسيق الحدائق"
-        )
+            await q.edit_message_caption(caption=FAQ[idx]["answer"], parse_mode="Markdown",
+                reply_markup=InlineKeyboardMarkup([[btn("🔙 رجوع","faq"), home_btn()]]))
+    elif d == "about":
+        txt = ("ℹ️ *الشركة الهندسية التقدمية*\n\n"
+               "🏗️ مقاولات معتمدة منذ *2005*\n"
+               f"📍 {ADDRESS}\n\n"
+               "✅ +500 مشروع منجز\n✅ +200 عميل راضٍ\n✅ 20 سنة خبرة\n✅ 15 قسم متخصص\n\n"
+               "👨‍💼 *المدير:* الأستاذ عبدالله الشيخ\n\n"
+               "*خدماتنا:* مقاولات، تصميم، كهرباء، سباكة، ديكور، حدائق")
+        await q.edit_message_caption(caption=txt, parse_mode="Markdown",
+            reply_markup=InlineKeyboardMarkup([[home_btn()]]))
+    elif d == "contact":
+        kb = InlineKeyboardMarkup([
+            [url_btn("💬 واتساب", WHATSAPP)],
+            [url_btn("🌐 الموقع", WEBSITE)],
+            [home_btn()],
+        ])
         await q.edit_message_caption(
-            caption=txt, parse_mode="Markdown",
-            reply_markup=InlineKeyboardMarkup([[back_to_main_btn()]]),
-        )
-
-    # ── تواصل ──
-    elif data == "contact":
-        txt = (
-            "📞 *تواصل معنا*\n\n"
-            f"📱 واتساب: *{PHONE}*\n"
-            f"🌐 الموقع: [اضغط هنا]({WEBSITE})\n\n"
-            "⏰ نرد على جميع الاستفسارات خلال ساعات العمل"
-        )
-        kb = [
-            [InlineKeyboardButton("💬 واتساب",  url=WHATSAPP)],
-            [InlineKeyboardButton("🌐 الموقع",  url=WEBSITE)],
-            [back_to_main_btn()],
-        ]
-        await q.edit_message_caption(caption=txt, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
-
-    # ── رجوع للقائمة الرئيسية ──
-    elif data == "back":
-        await q.edit_message_caption(
-            caption=WELCOME, parse_mode="Markdown", reply_markup=main_menu_keyboard()
-        )
-
-    # ── التقييم ──
-    elif data.startswith("rate_"):
+            caption=f"📞 *تواصل معنا*\n\n📱 {PHONE}\n📧 {EMAIL}\n📍 {ADDRESS}\n\n⏰ الأحد-الخميس: 8ص-6م",
+            parse_mode="Markdown", reply_markup=kb)
+    elif d == "back":
+        await q.edit_message_caption(caption=WELCOME, parse_mode="Markdown", reply_markup=main_kb())
+    elif d.startswith("rate_"):
         await handle_rating(update, ctx)
 
 # ══════════════════════════════════════════════════════════════
-# 💬  استقبال الرسائل النصية — FAQ تلقائي
+# 💬  الرسائل النصية — FAQ تلقائي
 # ══════════════════════════════════════════════════════════════
 async def handle_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.strip().lower()
-
-    # بحث في الـ FAQ
     for item in FAQ:
         if any(kw in text for kw in item["keywords"]):
             await typing(update, ctx)
-            await update.message.reply_text(
-                item["answer"],
-                parse_mode="Markdown",
-                reply_markup=InlineKeyboardMarkup([
-                    [back_to_main_btn()]
-                ]),
-            )
+            await update.message.reply_text(item["answer"], parse_mode="Markdown",
+                reply_markup=InlineKeyboardMarkup([[home_btn()]]))
             return
-
-    # رد افتراضي
     await typing(update, ctx)
     await update.message.reply_text(
-        "لم أفهم رسالتك 😅\n\nاضغط /start للعودة للقائمة الرئيسية\nأو تواصل معنا مباشرة 📞",
+        "لم أفهم رسالتك 😅\n\nاضغط /start للقائمة الرئيسية",
         parse_mode="Markdown",
-        reply_markup=InlineKeyboardMarkup([
-            [back_to_main_btn()],
-            [InlineKeyboardButton("💬 واتساب", url=WHATSAPP)],
-        ]),
+        reply_markup=InlineKeyboardMarkup([[home_btn()], [url_btn("💬 واتساب", WHATSAPP)]])
     )
 
 # ══════════════════════════════════════════════════════════════
-# 🚀  التشغيل
+# 🚀  post_init + التشغيل
 # ══════════════════════════════════════════════════════════════
-async def set_commands(app):
+async def post_init(app):
     await app.bot.set_my_commands([
         ("start",           "🏠 ابدأ — القائمة الرئيسية"),
         ("contact_support", "📞 تواصل معنا"),
@@ -890,38 +853,36 @@ async def set_commands(app):
     ])
 
 def main():
-    app = Application.builder().token(TOKEN).post_init(set_commands).build()
+    app = Application.builder().token(TOKEN).post_init(post_init).build()
 
-    # ── ConversationHandler للحاسبة ──
     calc_conv = ConversationHandler(
         entry_points=[
             CallbackQueryHandler(calc_start, pattern="^calc_start$"),
             CallbackQueryHandler(calc_start, pattern="^calc_from_"),
         ],
         states={
-            CALC_CHOOSE_PKG: [CallbackQueryHandler(calc_choose_pkg, pattern="^cpkg_")],
-            CALC_AREA:       [MessageHandler(filters.TEXT & ~filters.COMMAND, calc_area)],
-            CALC_RATE:       [
+            CALC_PKG:  [CallbackQueryHandler(calc_choose_pkg, pattern="^cpkg_")],
+            CALC_AREA: [MessageHandler(filters.TEXT & ~filters.COMMAND, calc_area)],
+            CALC_RATE: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, calc_rate),
-                CallbackQueryHandler(calc_skip_rate, pattern="^skip_rate$"),
+                CallbackQueryHandler(calc_skip, pattern="^skip_rate$"),
             ],
         },
         fallbacks=[CallbackQueryHandler(handle_callback, pattern="^back$")],
         allow_reentry=True,
     )
 
-    # ── ConversationHandler للطلبات ──
     order_conv = ConversationHandler(
         entry_points=[
             CallbackQueryHandler(order_start, pattern="^order_start$"),
             CallbackQueryHandler(order_start, pattern="^order_from_"),
         ],
         states={
-            ORDER_NAME:         [MessageHandler(filters.TEXT & ~filters.COMMAND, order_name)],
-            ORDER_AREA_TEXT:    [MessageHandler(filters.TEXT & ~filters.COMMAND, order_area)],
-            ORDER_REGION:       [MessageHandler(filters.TEXT & ~filters.COMMAND, order_region)],
-            ORDER_PROJECT_TYPE: [CallbackQueryHandler(order_project_type, pattern="^otype_")],
-            ORDER_NOTES:        [MessageHandler(filters.TEXT & ~filters.COMMAND, order_notes)],
+            ORD_NAME:   [MessageHandler(filters.TEXT & ~filters.COMMAND, ord_name)],
+            ORD_AREA:   [MessageHandler(filters.TEXT & ~filters.COMMAND, ord_area)],
+            ORD_REGION: [MessageHandler(filters.TEXT & ~filters.COMMAND, ord_region)],
+            ORD_TYPE:   [CallbackQueryHandler(ord_type, pattern="^ot_")],
+            ORD_NOTES:  [MessageHandler(filters.TEXT & ~filters.COMMAND, ord_notes)],
         },
         fallbacks=[CallbackQueryHandler(handle_callback, pattern="^back$")],
         allow_reentry=True,
@@ -935,7 +896,7 @@ def main():
     app.add_handler(CallbackQueryHandler(handle_callback))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    logger.info("✅ البوت شغّال — الهندسية التقدمية")
+    logger.info("✅ البوت v2.0 شغّال — الهندسية التقدمية")
     app.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
