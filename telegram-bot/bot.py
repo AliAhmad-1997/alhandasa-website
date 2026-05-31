@@ -1,5 +1,8 @@
 import logging
 import os
+import json
+import urllib.request
+from datetime import datetime
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application, CommandHandler, CallbackQueryHandler,
@@ -16,11 +19,59 @@ ADMIN_ID = int(os.environ.get("ADMIN_ID", "0"))
 logging.basicConfig(format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-WHATSAPP = "https://wa.me/00963986555105"
-WEBSITE  = "https://aliahmad-1997.github.io/Advance-Engineering-Company/"
-PHONE    = "0986555105"
-EMAIL    = "aliahmad@gmail.com"
-ADDRESS  = "حمص — شارع الأهرام، مقابل مدرسة جميل سرحان"
+WHATSAPP    = "https://wa.me/00963986555105"
+WEBSITE     = "https://aliahmad-1997.github.io/Advance-Engineering-Company/"
+PHONE       = "0986555105"
+EMAIL       = "aliahmad@gmail.com"
+ADDRESS     = "حمص — شارع الأهرام، مقابل مدرسة جميل سرحان"
+BOT_USERNAME = "AdvanceEngineeringBot"
+PRICES_URL  = "https://raw.githubusercontent.com/AliAhmad-1997/Advance-Engineering-Company/main/prices.json"
+
+# ══════════════════════════════════════════════════════════════
+# 📥  تحميل الأسعار من prices.json (مصدر الحقيقة الوحيد)
+# ══════════════════════════════════════════════════════════════
+def load_prices():
+    """يحمّل prices.json من GitHub — fallback للبيانات المحلية"""
+    try:
+        with urllib.request.urlopen(PRICES_URL, timeout=5) as r:
+            return json.loads(r.read())
+    except Exception as e:
+        logger.warning(f"تعذّر تحميل prices.json: {e} — استخدام البيانات المحلية")
+        return None
+
+def build_packages_from_json(data):
+    """يحوّل بيانات JSON لـ PACKAGES dict"""
+    pkgs = {}
+    for p in data["packages"]:
+        pkgs[p["id"]] = {
+            "name": p["name"], "icon": p["icon"],
+            "price": p["price"], "unit": p["unit"],
+            "desc": p["desc"],
+            "features": {
+                f"💧 السباكة": p["features"].get("السباكة", []),
+                f"⚡ الكهرباء": p["features"].get("الكهرباء", []),
+                f"🎨 التشطيبات": p["features"].get("التشطيبات", []),
+            }
+        }
+    return pkgs
+
+def build_shop_from_json(data):
+    """يحوّل بيانات JSON لـ SHOP dict"""
+    shop = {}
+    icons = {"سيراميك وبلاط":"🏺","صحيات وسباكة":"💧","كهربائيات":"⚡","أبواب وشبابيك":"🚪","تشطيبات وديكور":"🎨"}
+    for cat, items in data["shop"].items():
+        icon = icons.get(cat, "📦")
+        shop[f"{icon} {cat}"] = [{"id":i["id"],"name":i["name"],"price":"حسب الطلب"} for i in items]
+    return shop
+
+# تحميل البيانات عند بدء التشغيل
+_prices_data = load_prices()
+if _prices_data:
+    PACKAGES = build_packages_from_json(_prices_data)
+    _shop_raw = _prices_data["shop"]
+    logger.info(f"✅ تم تحميل prices.json — {len(PACKAGES)} باقة")
+else:
+    _prices_data = None
 
 # ══════════════════════════════════════════════════════════════
 # 📦  7 باقات كاملة
@@ -704,6 +755,54 @@ async def ord_notes(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await _finalize_order(update.message, ctx)
     return ConversationHandler.END
 
+def generate_invoice_text(d, pkg_info_str=""):
+    """يولّد فاتورة نصية احترافية"""
+    now = datetime.now().strftime("%Y-%m-%d %H:%M")
+    inv_num = f"ITE-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+    
+    lines = [
+        "━━━━━━━━━━━━━━━━━━━━━━",
+        "🏗️ *الشركة الهندسية التقدمية*",
+        f"📍 {ADDRESS}",
+        f"📱 {PHONE}",
+        "━━━━━━━━━━━━━━━━━━━━━━",
+        f"📋 *فاتورة طلب عرض سعر*",
+        f"🔢 رقم الطلب: `{inv_num}`",
+        f"📅 التاريخ: {now}",
+        "━━━━━━━━━━━━━━━━━━━━━━",
+        f"👤 الاسم: *{d.get('ord_name','-')}*",
+        f"📐 المساحة: *{d.get('ord_area','-')} م²*",
+        f"📍 المنطقة: *{d.get('ord_region','-')}*",
+        f"🏗️ النوع: *{d.get('ord_type','-')}*",
+    ]
+    if pkg_info_str:
+        lines.append(f"📦 {pkg_info_str}")
+    
+    # حساب تقديري إذا عندنا الباقة والمساحة
+    pkg_key = d.get("order_pkg")
+    area = d.get("ord_area")
+    if pkg_key and area and pkg_key in PACKAGES:
+        p = PACKAGES[pkg_key]
+        total = round(float(area) * p["price"])
+        m12 = round(total / 12)
+        m24 = round(total / 24)
+        lines += [
+            "━━━━━━━━━━━━━━━━━━━━━━",
+            f"💰 *التكلفة التقديرية*",
+            f"💵 الإجمالي: *{total:,} $*",
+            f"📅 قسط 12 شهر: *{m12:,} $*",
+            f"📅 قسط 24 شهر: *{m24:,} $*",
+        ]
+    
+    lines += [
+        "━━━━━━━━━━━━━━━━━━━━━━",
+        f"📝 ملاحظات: {d.get('ord_notes','-')}",
+        "━━━━━━━━━━━━━━━━━━━━━━",
+        "_* الأسعار تقديرية وتشمل المواد والعمالة_",
+        f"_سيتواصل معك فريقنا خلال 24 ساعة_",
+    ]
+    return "\n".join(lines)
+
 async def _finalize_order(msg, ctx):
     d = ctx.user_data
     pkg_info = ""
@@ -712,24 +811,15 @@ async def _finalize_order(msg, ctx):
         if p: pkg_info = f"\n📦 الباقة: *{p['name']}* ({p['price']}$)"
 
     # فاتورة للمستخدم
-    invoice = (
-        "✅ *تم استلام طلبك!*\n\n"
-        "━━━━━━━━━━━━━━━━━━\n"
-        f"👤 الاسم: *{d.get('ord_name','-')}*\n"
-        f"📐 المساحة: *{d.get('ord_area','-')} م²*\n"
-        f"📍 المنطقة: *{d.get('ord_region','-')}*\n"
-        f"🏗️ النوع: *{d.get('ord_type','-')}*\n"
-        f"📝 ملاحظات: {d.get('ord_notes','-')}"
-        + pkg_info +
-        "\n━━━━━━━━━━━━━━━━━━\n\n"
-        "سيتواصل معك فريقنا خلال *24 ساعة* 📞\n"
-        f"أو تواصل مباشرة: *{PHONE}*"
-    )
+    invoice_text = generate_invoice_text(d, pkg_info.replace("\n📦 الباقة: ","") if pkg_info else "")
+    full_invoice = "✅ *تم استلام طلبك بنجاح!*\n\n" + invoice_text
+    
     kb = InlineKeyboardMarkup([
         [url_btn("💬 واتساب مباشر", WHATSAPP)],
+        [InlineKeyboardButton("🤖 فتح البوت", url=f"https://t.me/{BOT_USERNAME}")],
         [home_btn()],
     ])
-    await msg.reply_text(invoice, parse_mode="Markdown", reply_markup=kb)
+    await msg.reply_text(full_invoice, parse_mode="Markdown", reply_markup=kb)
 
     # إشعار المشرف
     user = msg.from_user
